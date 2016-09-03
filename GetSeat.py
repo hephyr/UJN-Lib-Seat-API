@@ -8,6 +8,8 @@ import requests
 
 def getToken():
     while True:
+        # std_num = 220121222002
+        # std_pass = 220121222002
         std_num = raw_input('账号:')
         std_pass = raw_input('密码:')
         url = 'http://seat.ujn.edu.cn/rest/auth?username=%s&password=%s' % (std_num, std_pass)
@@ -38,6 +40,34 @@ def getBuildingsInfo(token):
     else:
         print '获取信息失败'
 
+def getSeatInfo(token, seat, date):
+    to21clock = False
+
+    begtimeurl = 'http://seat.ujn.edu.cn/rest/v2/startTimesForSeat/%s/%s?token=%s' % (seat, date, token)
+    begpage = requests.get(begtimeurl)
+    page_json = json.loads(begpage.text)
+    startlist = page_json['data']['startTimes']
+
+    hour = 420
+
+    if date == datetime.date.today():
+        hour = datetime.datetime.today()
+        hour = hour.strftime('%H') + 1
+    endtime = 1260
+    for data in startlist[::-1]:
+        time = int(data['id'])
+        if time != endtime:
+            break
+        else:
+            endtime -= 60
+    else:
+        to21clock = True
+    time = int(startlist[0]['id'])
+    if time < hour:
+        to21clock = True
+    return to21clock
+
+
 def layoutByDate(token, roomId, date):
     url = 'http://seat.ujn.edu.cn/rest/v2/room/layoutByDate/%s/%s/?token=%s' % (roomId, date, token)
     r = requests.get(url)
@@ -47,9 +77,15 @@ def layoutByDate(token, roomId, date):
     data = page_json['data']
     print data['name']
     layout = data['layout']
-    for i in layout:
-        if layout[i]['type'] == 'seat':
-            print '座位号:', layout[i]['name'], 'id:', layout[i]['id'], '是否可用:', layout[i]['status']
+
+    l = [layout[x] for x in layout if layout[x]['type'] == 'seat']
+    l = sorted(l, key=lambda x:x['name'])
+    for i in l:
+        print '座位号:', i['name'], 'id:', i['id'], '是否可预约到21点:',
+        if getSeatInfo(token, i['id'],date):
+            print '✓'
+        else:
+            print ''
     
     return True
 
@@ -182,7 +218,7 @@ if __name__ == '__main__':
             token = getToken()
             need_login = False
 
-        if checkToken(token) == False:
+        if not checkToken(token):
             print 'token error, 请重新登录'
             need_login = True
             continue
@@ -202,6 +238,10 @@ if __name__ == '__main__':
             checkIn(token);
         elif a == '5':
             getBuildingsInfo(token)
+        elif a == '6':
+            date = datetime.date.today() + datetime.timedelta(days=1)
+            strdate = date.strftime('%Y-%m-%d')
+            layoutByDate(token, '34', date)
         else:
             print '输入错误, 请重新输入'
 
