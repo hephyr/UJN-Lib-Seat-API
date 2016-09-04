@@ -8,10 +8,10 @@ import requests
 
 def getToken():
     while True:
-        # std_num = 220121222002
-        # std_pass = 220121222002
-        std_num = raw_input('账号:')
-        std_pass = raw_input('密码:')
+        std_num = 220141222001
+        std_pass = 220141222001
+        # std_num = raw_input('账号:')
+        # std_pass = raw_input('密码:')
         url = 'http://seat.ujn.edu.cn/rest/auth?username=%s&password=%s' % (std_num, std_pass)
         r = requests.get(url)
         page_json = json.loads(r.text)
@@ -48,23 +48,29 @@ def getSeatInfo(token, seat, date):
     page_json = json.loads(begpage.text)
     startlist = page_json['data']['startTimes']
 
-    hour = 420
+    hour = '480'
 
     if date == datetime.date.today():
-        hour = datetime.datetime.today()
-        hour = hour.strftime('%H') + 1
+        hour = (datetime.datetime.today() + datetime.timedelta(hours=1)).hour
+        hour = str(hour * 60)
     endtime = 1260
-    for data in startlist[::-1]:
-        time = int(data['id'])
-        if time != endtime:
-            break
-        else:
-            endtime -= 60
+    if startlist:
+        try :
+            time = startlist[1]['id']
+        except BaseException:
+            return False
+
+        if time == hour:
+            for data in startlist[:0:-1]:
+                time = data['id']
+                if time != str(endtime):
+                    break
+                else:
+                    endtime -= 60
+            else:
+                to21clock = True
     else:
-        to21clock = True
-    time = int(startlist[0]['id'])
-    if time < hour:
-        to21clock = True
+        print '○',
     return to21clock
 
 
@@ -80,14 +86,17 @@ def layoutByDate(token, roomId, date):
 
     l = [layout[x] for x in layout if layout[x]['type'] == 'seat']
     l = sorted(l, key=lambda x:x['name'])
+
+    d = {}
     for i in l:
-        print '座位号:', i['name'], 'id:', i['id'], '是否可预约到21点:',
+        print '座位号:', i['name'], '是否可预约到21点:',
+        d[i['name']] = i['id']
         if getSeatInfo(token, i['id'],date):
             print '✓'
         else:
             print ''
     
-    return True
+    return d
 
 def getMaxTime(token):
     url = 'http://seat.ujn.edu.cn/rest/v2/allowedHours?token=%s' % token
@@ -124,29 +133,30 @@ def quickBook(token):
 def getSeat(token):
     date = datetime.date.today()
     strdate = date.strftime('%Y-%m-%d')
+    getBuildingsInfo(token)
+    roomId = raw_input('room id :')
     while True:
-        getBuildingsInfo(token)
-
-        roomId = raw_input('room id :')
-        while True:
-            print '1. 今天'
-            print '2. 明天'
-            a = raw_input()
-            if a == '1':
-                break
-            elif a == '2':
-                date += datetime.timedelta(days=1)
-                strdate = date.strftime('%Y-%m-%d')
-                break
-            else:
-                print '输入错误'
-        load = layoutByDate(token, roomId, strdate)
-        if load:
+        print '1. 今天'
+        print '2. 明天'
+        a = raw_input()
+        if a == '1':
+            break
+        elif a == '2':
+            date += datetime.timedelta(days=1)
+            strdate = date.strftime('%Y-%m-%d')
             break
         else:
-            continue
-    
-    seat = raw_input('输入座位id:')
+            print '输入错误'
+    seat_dict = layoutByDate(token, roomId, date)
+    while True:
+        seat = raw_input('输入座位号:')
+        if len(seat) < 3:
+            zero = (3 - len(seat)) * '0'
+            seat = zero + seat
+        if seat not in seat_dict.keys():
+            print '座位号错误'
+        else:
+            break
     while True:
         startTime = int(raw_input('输入开始时间 (7:00输入7    20:00输入20   最晚22)'))
         
@@ -154,12 +164,12 @@ def getSeat(token):
             hour = datetime.datetime.today()
             hour = int(hour.strftime('%H'))
             if startTime < hour or hour > 22:
-                print 'input error'
+                print '输入错误'
             else:
                 break
         else :
             if startTime < 7 or startTime > 22:
-                print 'input error'
+                print '输入错误'
             else:
                 break
 
@@ -169,9 +179,10 @@ def getSeat(token):
         'token': token,
         'startTime' : startTime,
         'endTime' : '1320',
-        'seat' : seat,
+        'seat' : seat_dict[seat],
         'date' : date
     }
+    print post_data
 
     url = 'http://seat.ujn.edu.cn/rest/v2/freeBook'
     r = requests.post(url, post_data)
@@ -238,10 +249,6 @@ if __name__ == '__main__':
             checkIn(token);
         elif a == '5':
             getBuildingsInfo(token)
-        elif a == '6':
-            date = datetime.date.today() + datetime.timedelta(days=1)
-            strdate = date.strftime('%Y-%m-%d')
-            layoutByDate(token, '34', date)
         else:
             print '输入错误, 请重新输入'
 
