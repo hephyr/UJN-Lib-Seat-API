@@ -8,10 +8,10 @@ import requests
 
 def getToken():
     while True:
-        std_num = 220141222001
-        std_pass = 220141222001
-        # std_num = raw_input('账号:')
-        # std_pass = raw_input('密码:')
+        # std_num = 220141222001
+        # std_pass = 220141222001
+        std_num = raw_input('账号:')
+        std_pass = raw_input('密码:')
         url = 'http://seat.ujn.edu.cn/rest/auth?username=%s&password=%s' % (std_num, std_pass)
         r = requests.get(url)
         page_json = json.loads(r.text)
