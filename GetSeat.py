@@ -182,7 +182,7 @@ def getSeat(token):
         'seat' : seat_dict[seat],
         'date' : date
     }
-    print post_data
+    # print post_data
 
     url = 'http://seat.ujn.edu.cn/rest/v2/freeBook'
     r = requests.post(url, post_data)
