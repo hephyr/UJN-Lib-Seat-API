@@ -212,7 +212,14 @@ class PersonLib(object):
         url = 'http://seat.ujn.edu.cn/rest/v2/history/1/10?token=%s' % self.token
         r = requests.get(url)
         page_json = json.loads(r.text)
-        return page_json
+        res = page_json['data']['reservations']
+        for re in res:
+            for k in re:
+                if re[k] == None:
+                    continue
+                elif isinstance(re[k], int):
+                    re[k] = str(re[k])
+                print k + ' : ' + re[k]
 
     def cancelRes(self):
         page_json = self.getHistory()
@@ -235,6 +242,7 @@ def menu():
 4. 签到
 5. 查看楼层信息
 6. 取消预约
+7. 查看历史
 9. 退出登录
 0. 退出程序
 
@@ -250,6 +258,7 @@ if __name__ == '__main__':
                 ac = raw_input('账号')
                 pw = raw_input('密码')
                 std = PersonLib(ac, pw)
+                # std = PersonLib()
                 need_login = False
             except TypeError, e:
                 print e
@@ -271,11 +280,13 @@ if __name__ == '__main__':
         elif a == '3':
             std.stop()
         elif a == '4':
-            std.checkIn();
+            std.checkIn()
         elif a == '5':
             std.getBuildingsInfo()
         elif a == '6':
             std.cancelRes()
+        elif a == '7':
+            std.getHistory()
         else:
             print '输入错误, 请重新输入'
 
