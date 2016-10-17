@@ -1,4 +1,4 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import json
@@ -8,6 +8,7 @@ import requests
 
 class PersonLib(object):
     def __init__(self, *account):
+        base_url = 'http://seat.ujn.edu.cn/'
         l = len(account)
         if l == 0:
             self.ac = self.pw = '220141222001'
@@ -21,14 +22,13 @@ class PersonLib(object):
             return False
 
     def getToken(self):
-        url = 'http://seat.ujn.edu.cn/rest/auth?username=%s&password=%s'\
-                % (self.ac, self.pw)
+        url = 'http://seat.ujn.edu.cn/rest/auth?username=%s&password=%s' % (self.ac, self.pw)
         r = requests.get(url)
         page_json = json.loads(r.text)
         if page_json['status'] == 'success':
             return page_json['data']['token']
-        else :
-            raise TypeError, 'Wrong account or password'
+        else:
+            raise TypeError('Wrong account or password')
 
     def checkToken(self):
         url = 'http://seat.ujn.edu.cn/rest/v2/user/reservations?token=%s' % self.token
@@ -36,7 +36,7 @@ class PersonLib(object):
         page = r.text
         if page.find('success') == -1:
             return False
-        else :
+        else:
             return True
 
     def getBuildingsInfo(self):
@@ -67,7 +67,7 @@ class PersonLib(object):
 
         endtime = 1260
         if startlist:
-            try :
+            try:
                 time = startlist[1]['id']
             except BaseException:
                 return False
@@ -86,8 +86,7 @@ class PersonLib(object):
         return to21clock
 
     def layoutByDate(self, roomId, date):
-        url = 'http://seat.ujn.edu.cn/rest/v2/room/layoutByDate/%s/%s/?token=%s'\
-                % (roomId, date, self.token)
+        url = 'http://seat.ujn.edu.cn/rest/v2/room/layoutByDate/%s/%s/?token=%s' % (roomId, date, self.token)
         r = requests.get(url)
         page_json = json.loads(r.text)
         if page_json['status'] != 'success':
@@ -97,24 +96,24 @@ class PersonLib(object):
         layout = data['layout']
 
         l = [layout[x] for x in layout if layout[x]['type'] == 'seat']
-        l = sorted(l, key=lambda x:x['name'])
+        l = sorted(l, key=lambda x: x['name'])
         d = {}
         for i in l:
             print '座位号:', i['name'], '是否可预约到21点:',
             d[i['name']] = i['id']
-            if self.getSeatInfo(i['id'],date):
+            if self.getSeatInfo(i['id'], date):
                 print '✓'
             else:
                 print ''
-        
+
         return d
 
     def quickBook(self):
         hour = raw_input('预约时长:')
         post_data = {
-            "token" : self.token,
-            "building" : "2",
-            "hour" : hour
+            "token": self.token,
+            "building": "2",
+            "hour": hour
         }
         url = 'http://seat.ujn.edu.cn/rest/v2/quickBook'
         r = requests.post(url, post_data)
@@ -157,7 +156,7 @@ class PersonLib(object):
                 break
         while True:
             startTime = int(raw_input('输入开始时间 (7:00输入7    20:00输入20   最晚22)'))
-            
+
             if date == datetime.date.today():
                 hour = datetime.datetime.today()
                 hour = int(hour.strftime('%H'))
@@ -165,7 +164,7 @@ class PersonLib(object):
                     print '输入错误'
                 else:
                     break
-            else :
+            else:
                 if startTime < 7 or startTime > 22:
                     print '输入错误'
                 else:
@@ -175,10 +174,10 @@ class PersonLib(object):
         startTime = str(startTime)
         post_data = {
             'token': self.token,
-            'startTime' : startTime,
-            'endTime' : '1320',
-            'seat' : seat_dict[seat],
-            'date' : date
+            'startTime': startTime,
+            'endTime': '1320',
+            'seat': seat_dict[seat],
+            'date': date
         }
 
         url = 'http://seat.ujn.edu.cn/rest/v2/freeBook'
@@ -208,14 +207,14 @@ class PersonLib(object):
         print page
 
     def getHistory(self):
-        #1是页数从1开始 10为每页显示个数
+        # 1是页数从1开始 10为每页显示个数
         url = 'http://seat.ujn.edu.cn/rest/v2/history/1/10?token=%s' % self.token
         r = requests.get(url)
         page_json = json.loads(r.text)
         res = page_json['data']['reservations']
         for re in res:
             for k in re:
-                if re[k] == None:
+                if re[k] is None:
                     continue
                 elif isinstance(re[k], int):
                     re[k] = str(re[k])
@@ -289,4 +288,3 @@ if __name__ == '__main__':
             std.getHistory()
         else:
             print '输入错误, 请重新输入'
-
