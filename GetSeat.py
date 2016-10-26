@@ -18,6 +18,9 @@ class PersonLib(object):
             self.ac = account[0]
             self.pw = account[1]
         self.token = self.getToken()
+        # self.getDatetime()
+        self.dates = self.getDatetime()
+        self.date = self.dates[1]
         if self.token is False:
             return False
 
@@ -39,21 +42,30 @@ class PersonLib(object):
         else:
             return True
 
+    def getDatetime(self):
+        url = 'http://seat.ujn.edu.cn/rest/v2/free/filters'
+        data = {'token': self.token}
+        r = requests.post(url, data)
+        page_json = json.loads(r.text)
+        date = page_json['data']['dates']
+        return date
+
     def getBuildingsInfo(self):
         url = 'http://seat.ujn.edu.cn/rest/v2/room/stats2/2?token=%s' % self.token
         r = requests.get(url)
         page_json = json.loads(r.text)
         if page_json['status'] == 'success':
+            data = ''
             for value in page_json['data']:
-                print 'id:', value['roomId'], value['room'],\
-                    '楼层:', value['floor'], ' 剩余:', value['free']
-            return page_json['data']
+                data += 'id:' + str(value['roomId']) + value['room']
+                data += u' 楼层:' + str(value['floor'])
+                data += u' 剩余:' + str(value['free']) + '\n'
+            return data
         else:
             return page_json['message']
 
     def getSeatInfo(self, seat, date):
         to21clock = False
-
         begtimeurl = 'http://seat.ujn.edu.cn/rest/v2/startTimesForSeat/%s/%s?token=%s' % (seat, date, self.token)
         begpage = requests.get(begtimeurl)
         page_json = json.loads(begpage.text)
@@ -82,8 +94,18 @@ class PersonLib(object):
                 else:
                     to21clock = True
         else:
-            print '○',
+            pass
+            # print '○',
         return to21clock
+
+    def getSeatTime(self, seat_id):
+        url = 'http://seat.ujn.edu.cn/rest/v2/startTimesForSeat/%s/%s?token=%s' % (seat_id, self.date, self.token)
+        r = requests.get(url)
+        page_json = json.loads(r.text)
+        text = '可开始时间\n'
+        for i in page_json['data']['startTimes']:
+            text += str(i['value']) + '\n'
+        return text
 
     def layoutByDate(self, roomId, date):
         url = 'http://seat.ujn.edu.cn/rest/v2/room/layoutByDate/%s/%s/?token=%s' % (roomId, date, self.token)
@@ -104,12 +126,10 @@ class PersonLib(object):
             if self.getSeatInfo(i['id'], date):
                 print '✓'
             else:
-                print ''
-
+                pass
         return d
 
-    def quickBook(self):
-        hour = raw_input('预约时长:')
+    def quickBook(self, hour):
         post_data = {
             "token": self.token,
             "building": "2",
@@ -118,19 +138,58 @@ class PersonLib(object):
         url = 'http://seat.ujn.edu.cn/rest/v2/quickBook'
         r = requests.post(url, post_data)
         page_json = json.loads(r.text)
+        data = ''
         if page_json['status'] != 'success':
-            print '预约失败', page_json['message']
+            data = '预约失败' + page_json['message']
+            return data
         else:
-            print '日期: ', page_json['data']['reservation']['onDate']
-            print '开始时间: ', page_json['data']['reservation']['begin']
-            print '结束时间: ', page_json['data']['reservation']['end']
-            print '地点: ', page_json['data']['reservation']['location']
+            data += '日期: ' + page_json['data']['reservation']['onDate'] + '/n'
+            data += '开始时间: ' + page_json['data']['reservation']['begin'] + '/n'
+            data += '结束时间: ', page_json['data']['reservation']['end'] + '/n'
+            data += '地点: ', page_json['data']['reservation']['location'] + '/n'
+            return data + page_json['message']
+
+    def freeBook(self, start_time, end_time, seat_id):
+        start = int(start_time) * 60
+        end = int(end_time) * 60
+        url = 'http://seat.ujn.edu.cn/rest/v2/freeBook'
+        post_data = {
+            'token': self.token,
+            'startTime': str(start),
+            'endTime': str(end),
+            'seat': seat_id,
+            'date': self.date
+        }
+        r = requests.post(url, post_data)
+        page_json = json.loads(r.text)
+        return page_json['message']
+
+    def setDate(self, choose):
+        if choose == '2':
+            self.date = self.dates[1]
+        else:
+            self.date = self.dates[0]
+
+    def getSeatId(self, room_id, seat_num):
+        if len(seat_num) < 3:
+            # 对座位号补零
+            zero = (3 - len(seat_num)) * '0'
+            seat_num = zero + seat_num
+        url = 'http://seat.ujn.edu.cn/rest/v2/room/layoutByDate/%s/%s/?token=%s' % (room_id, self.date, self.token)
+        r = requests.get(url)
+        page_json = json.loads(r.text)
+        if page_json['status'] != 'success':
             return page_json['message']
+        data = page_json['data']
+        seats = [i for i in data['layout'].values() if i['type'] == 'seat']
+        for seat in seats:
+            if seat['name'] == seat_num:
+                return seat['id']
 
     def getSeat(self):
         date = datetime.date.today()
         strdate = date.strftime('%Y-%m-%d')
-        self.getBuildingsInfo()
+        print self.getBuildingsInfo()
         roomId = raw_input('room id :')
         while True:
             print '1. 今天'
@@ -192,7 +251,6 @@ class PersonLib(object):
         url = 'http://seat.ujn.edu.cn/rest/v2/checkIn?token=%s' % self.token
         r = requests.get(url)
         page_json = json.loads(r.text)
-        print page_json
         return page_json['message']
 
     def stop(self):
@@ -254,10 +312,10 @@ if __name__ == '__main__':
     while True:
         while need_login:
             try:
-                ac = raw_input('账号')
-                pw = raw_input('密码')
-                std = PersonLib(ac, pw)
-                # std = PersonLib()
+                # ac = raw_input('账号')
+                # pw = raw_input('密码')
+                # std = PersonLib(ac, pw)
+                std = PersonLib()
                 need_login = False
             except TypeError, e:
                 print e
@@ -273,18 +331,21 @@ if __name__ == '__main__':
         elif a == '9':
             need_login = True
         elif a == '1':
-            std.quickBook()
+            hour = raw_input('预约时长:')
+            std.quickBook(hour)
         elif a == '2':
             std.getSeat()
         elif a == '3':
             std.stop()
         elif a == '4':
-            std.checkIn()
+            print std.checkIn()
         elif a == '5':
-            std.getBuildingsInfo()
+            print std.getBuildingsInfo()
         elif a == '6':
             std.cancelRes()
         elif a == '7':
             std.getHistory()
+        elif a == '8':
+            std.getSeatTime('9716')
         else:
             print '输入错误, 请重新输入'
