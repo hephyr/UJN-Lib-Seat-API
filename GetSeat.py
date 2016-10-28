@@ -20,7 +20,7 @@ class PersonLib(object):
         self.token = self.getToken()
         # self.getDatetime()
         self.dates = self.getDatetime()
-        self.date = self.dates[1]
+        self.date = self.dates[0]
         if self.token is False:
             return False
 
