@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import math
 import json
 import random
 
@@ -106,17 +107,14 @@ def cmdGetSeatTime(bot, update, args):
 def cmdGetSeat(bot, update, args):
     bot.sendChatAction(chat_id=update.message.chat_id,
                        action=telegram.ChatAction.TYPING)
-    ac = args[0]
-    pw = args[1]
-    room_id = args[2]
-    seat_num = args[3]
-    start_time = args[4]
-    end_time = args[5]
-    person = PersonLib(ac, pw)
-    if len(args) == 7 and args[6] == '2':
-        PersonLib.setDate(args[6])
-    seat_id = person.getSeatId(room_id, seat_num)
-    text = person.freeBook(start_time, end_time, seat_id)
+    room_id = args[0]
+    seat_num = args[1]
+    start_time = args[2]
+    end_time = args[3]
+    resDate = '1'
+    if len(args == 5) and args[4] == '2':
+        resDate = '2'
+    text = hackBook(room_id, seat_num, start_time, end_time, resDate)
     bot.sendMessage(chat_id=update.message.chat_id, text=text)
 
 echo_handler = MessageHandler([Filters.text,

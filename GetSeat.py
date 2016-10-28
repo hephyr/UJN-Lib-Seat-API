@@ -3,6 +3,7 @@
 
 import json
 import datetime
+import random
 import requests
 
 
@@ -18,7 +19,6 @@ class PersonLib(object):
             self.ac = account[0]
             self.pw = account[1]
         self.token = self.getToken()
-        # self.getDatetime()
         self.dates = self.getDatetime()
         self.date = self.dates[0]
         if self.token is False:
@@ -64,40 +64,6 @@ class PersonLib(object):
         else:
             return page_json['message']
 
-    def getSeatInfo(self, seat, date):
-        to21clock = False
-        begtimeurl = 'http://seat.ujn.edu.cn/rest/v2/startTimesForSeat/%s/%s?token=%s' % (seat, date, self.token)
-        begpage = requests.get(begtimeurl)
-        page_json = json.loads(begpage.text)
-        startlist = page_json['data']['startTimes']
-
-        hour = '480'
-
-        if date == datetime.date.today():
-            hour = (datetime.datetime.today() + datetime.timedelta(hours=1)).hour
-            hour = str(hour * 60)
-
-        endtime = 1260
-        if startlist:
-            try:
-                time = startlist[1]['id']
-            except BaseException:
-                return False
-
-            if time == hour:
-                for data in startlist[:0:-1]:
-                    time = data['id']
-                    if time != str(endtime):
-                        break
-                    else:
-                        endtime -= 60
-                else:
-                    to21clock = True
-        else:
-            pass
-            # print '○',
-        return to21clock
-
     def getSeatTime(self, seat_id):
         url = 'http://seat.ujn.edu.cn/rest/v2/startTimesForSeat/%s/%s?token=%s' % (seat_id, self.date, self.token)
         r = requests.get(url)
@@ -106,28 +72,6 @@ class PersonLib(object):
         for i in page_json['data']['startTimes']:
             text += str(i['value']) + '\n'
         return text
-
-    def layoutByDate(self, roomId, date):
-        url = 'http://seat.ujn.edu.cn/rest/v2/room/layoutByDate/%s/%s/?token=%s' % (roomId, date, self.token)
-        r = requests.get(url)
-        page_json = json.loads(r.text)
-        if page_json['status'] != 'success':
-            return False
-        data = page_json['data']
-        print data['name']
-        layout = data['layout']
-
-        l = [layout[x] for x in layout if layout[x]['type'] == 'seat']
-        l = sorted(l, key=lambda x: x['name'])
-        d = {}
-        for i in l:
-            print '座位号:', i['name'], '是否可预约到21点:',
-            d[i['name']] = i['id']
-            if self.getSeatInfo(i['id'], date):
-                print '✓'
-            else:
-                pass
-        return d
 
     def quickBook(self, hour):
         post_data = {
@@ -162,7 +106,10 @@ class PersonLib(object):
         }
         r = requests.post(url, post_data)
         page_json = json.loads(r.text)
-        return page_json['message']
+        if page_json['status'] == 'fail':
+            return False
+        else:
+            return True
 
     def setDate(self, choose):
         if choose == '2':
@@ -186,67 +133,6 @@ class PersonLib(object):
             if seat['name'] == seat_num:
                 return seat['id']
 
-    def getSeat(self):
-        date = datetime.date.today()
-        strdate = date.strftime('%Y-%m-%d')
-        print self.getBuildingsInfo()
-        roomId = raw_input('room id :')
-        while True:
-            print '1. 今天'
-            print '2. 明天'
-            a = raw_input()
-            if a == '1':
-                break
-            elif a == '2':
-                date += datetime.timedelta(days=1)
-                strdate = date.strftime('%Y-%m-%d')
-                break
-            else:
-                print '输入错误'
-        seat_dict = self.layoutByDate(roomId, date)
-        while True:
-            seat = raw_input('输入座位号:')
-            if len(seat) < 3:
-                zero = (3 - len(seat)) * '0'
-                seat = zero + seat
-            if seat not in seat_dict.keys():
-                print '座位号错误'
-            else:
-                break
-        while True:
-            startTime = int(raw_input('输入开始时间 (7:00输入7    20:00输入20   最晚22)'))
-
-            if date == datetime.date.today():
-                hour = datetime.datetime.today()
-                hour = int(hour.strftime('%H'))
-                if startTime < hour or hour > 22:
-                    print '输入错误'
-                else:
-                    break
-            else:
-                if startTime < 7 or startTime > 22:
-                    print '输入错误'
-                else:
-                    break
-
-        startTime *= 60
-        startTime = str(startTime)
-        post_data = {
-            'token': self.token,
-            'startTime': startTime,
-            'endTime': '1320',
-            'seat': seat_dict[seat],
-            'date': date
-        }
-
-        url = 'http://seat.ujn.edu.cn/rest/v2/freeBook'
-        r = requests.post(url, post_data)
-        page_json = json.loads(r.text)
-        if page_json['status'] != 'success':
-            print page_json['message']
-        else:
-            print '预约成功'
-
     def checkIn(self):
         url = 'http://seat.ujn.edu.cn/rest/v2/checkIn?token=%s' % self.token
         r = requests.get(url)
@@ -256,13 +142,14 @@ class PersonLib(object):
     def stop(self):
         url = 'http://seat.ujn.edu.cn/rest/v2/stop?token=%s' % self.token
         r = requests.get(url)
-        print r.text
+        page_json = json.loads(r.text)
+        return page_json['message']
 
     def getMaxTime(self):
         url = 'http://seat.ujn.edu.cn/rest/v2/allowedHours?token=%s' % self.token
         r = requests.get(url)
-        page = r.text
-        print page
+        page_json = json.loads(r.text)
+        return r.text
 
     def getHistory(self):
         # 1是页数从1开始 10为每页显示个数
@@ -289,6 +176,39 @@ class PersonLib(object):
         r = requests.get(url)
         page_json = json.loads(r.text)
         return page_json['status']
+
+
+def hackBook(room_id, seat_num, start_time, end_time, resDate):
+    with open('can_use.txt', 'r') as f:
+        lines = f.readlines()
+    spent = int(end_time) - int(start_time)
+    res_time = range(int(start_time), int(end_time))
+    # print res_time
+    flag = 1
+    # 验证账号是否可用
+    while flag < 2:
+        flag += 1
+        random_lines = random.sample(lines, spent)
+        print random_lines
+        i = 0
+        while i < spent:
+            line = random_lines[i]
+            ap = line[:-1]
+            t = res_time[i]
+            i += 1
+            try:
+                p = PersonLib(ap)
+                p.setDate(resDate)
+                seat_id = p.getSeatId(room_id, seat_num)
+                result = p.freeBook(t, t+1, seat_id)
+            except TypeError:
+                break
+        else:
+            break
+    else:
+        text = '无法登录'
+        return text
+    return '成功'
 
 
 def menu():
@@ -346,6 +266,6 @@ if __name__ == '__main__':
         elif a == '7':
             std.getHistory()
         elif a == '8':
-            std.getSeatTime('9716')
+            hackBook('19', '307', 7, 8, '2')
         else:
             print '输入错误, 请重新输入'
