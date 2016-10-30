@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import datetime
 import random
 import requests
 
@@ -42,6 +41,12 @@ class PersonLib(object):
         else:
             return True
 
+    def setDate(self, choose):
+        if choose == '2' or choose.lower() == 'y':
+            self.date = self.dates[1]
+        else:
+            self.date = self.dates[0]
+
     def getDatetime(self):
         url = 'http://seat.ujn.edu.cn/rest/v2/free/filters'
         data = {'token': self.token}
@@ -68,10 +73,15 @@ class PersonLib(object):
         url = 'http://seat.ujn.edu.cn/rest/v2/startTimesForSeat/%s/%s?token=%s' % (seat_id, self.date, self.token)
         r = requests.get(url)
         page_json = json.loads(r.text)
-        text = '可开始时间\n'
+        text = u'可开始时间\n'
         for i in page_json['data']['startTimes']:
-            text += str(i['value']) + '\n'
+            text += i['value'] + u'\n'
         return text
+
+    def getSeatInfo(self, room_id, seat_num, resDate):
+        self.setDate(resDate)
+        seat_id = self.getSeatId(room_id, seat_num)
+        return std.getSeatTime(seat_id)
 
     def quickBook(self, hour):
         post_data = {
@@ -110,12 +120,6 @@ class PersonLib(object):
             return False
         else:
             return True
-
-    def setDate(self, choose):
-        if choose == '2':
-            self.date = self.dates[1]
-        else:
-            self.date = self.dates[0]
 
     def getSeatId(self, room_id, seat_num):
         if len(seat_num) < 3:
@@ -157,17 +161,22 @@ class PersonLib(object):
         r = requests.get(url)
         page_json = json.loads(r.text)
         res = page_json['data']['reservations']
-        for re in res:
-            for k in re:
-                if re[k] is None:
-                    continue
-                elif isinstance(re[k], int):
-                    re[k] = str(re[k])
-                print k + ' : ' + re[k]
+        return res
+        # for re in res:
+        #     for k in re:
+        #         if re[k] is None:
+        #             continue
+        #         elif isinstance(re[k], int):
+        #             re[k] = str(re[k])
+        #         print k + ' : ' + re[k]
+
+    def isInUse(self):
+        res = self.getHistory()
+        reserve = [i for i in res if i['stat'] == 'CHECK_IN' or i['stat'] == 'RESERVE']
+        return False if len(reserve) == 0 else True
 
     def cancelRes(self):
-        page_json = self.getHistory()
-        res = page_json['data']['reservations']
+        res = self.getHistory()
         reserve = [i for i in res if i['stat'] == 'RESERVE']
         if len(reserve) == 0:
             return '没有预约的座位'
@@ -182,45 +191,43 @@ def hackBook(room_id, seat_num, start_time, end_time, resDate):
     with open('can_use.txt', 'r') as f:
         lines = f.readlines()
     spent = int(end_time) - int(start_time)
-    res_time = range(int(start_time), int(end_time))
-    # print res_time
-    flag = 1
-    # 验证账号是否可用
-    while flag < 2:
-        flag += 1
-        random_lines = random.sample(lines, spent)
-        print random_lines
-        i = 0
-        while i < spent:
-            line = random_lines[i]
-            ap = line[:-1]
-            t = res_time[i]
+    res_time = range(int(start_time), int(end_time) + 1)
+    random_lines = random.sample(lines, spent*3)
+    i = 0
+    text = ''
+    while i < len(random_lines):
+        line = random_lines[i]
+        ap = line[:-1]
+        t = res_time[0]
+        try:
+            p = PersonLib(ap)
+            if p.isInUse():
+                continue
+        except TypeError:
+            continue
+        finally:
             i += 1
-            try:
-                p = PersonLib(ap)
-                p.setDate(resDate)
-                seat_id = p.getSeatId(room_id, seat_num)
-                result = p.freeBook(t, t+1, seat_id)
-            except TypeError:
-                break
+        res_time = res_time[1:]
+        p.setDate(resDate)
+        seat_id = p.getSeatId(room_id, seat_num)
+        result = p.freeBook(t, t+1, seat_id)
+        if result:
+            text += str(t) + '-' + str(t+1) + ':预约成功\n'
         else:
+            text += str(t) + '-' + str(t+1) + ':预约失败\n'
+        if len(res_time) == 0:
             break
     else:
-        text = '无法登录'
-        return text
-    return '成功'
+        return 'Something wrong'
+
+    return text
 
 
 def menu():
     menu = '''
-1. 快速预约
-2. 自选座位
-3. 结束使用
-4. 签到
-5. 查看楼层信息
-6. 取消预约
-7. 查看历史
-9. 退出登录
+1. 查看楼层信息
+2. 查看座位信息
+3. 预约
 0. 退出程序
 
 请输入编号
@@ -228,44 +235,30 @@ def menu():
     return menu
 
 if __name__ == '__main__':
-    need_login = True
     while True:
-        while need_login:
-            try:
-                # ac = raw_input('账号')
-                # pw = raw_input('密码')
-                # std = PersonLib(ac, pw)
-                std = PersonLib()
-                need_login = False
-            except TypeError, e:
-                print e
-
+        std = PersonLib()
         if not std.checkToken():
             print 'token error, 请重新登录'
-            need_login = True
             continue
 
         a = raw_input(menu())
         if a == '0':
             break
-        elif a == '9':
-            need_login = True
         elif a == '1':
-            hour = raw_input('预约时长:')
-            std.quickBook(hour)
-        elif a == '2':
-            std.getSeat()
-        elif a == '3':
-            std.stop()
-        elif a == '4':
-            print std.checkIn()
-        elif a == '5':
             print std.getBuildingsInfo()
-        elif a == '6':
-            std.cancelRes()
-        elif a == '7':
-            std.getHistory()
-        elif a == '8':
-            hackBook('19', '307', 7, 8, '2')
+        elif a == '2':
+            room_id = raw_input('阅览室id:')
+            seat_num = raw_input('座位号:')
+            resDate = raw_input('是否为明天 ?(Y/n)')
+            print std.getSeatInfo(room_id, seat_num, resDate)
+        elif a == '3':
+            room_id = raw_input('阅览室id:')
+            seat_num = raw_input('座位号:')
+            start_time = raw_input('请输入开始时间(24进制):')
+            end_time = raw_input('请输入结束时间(24进制):')
+            resDate = raw_input('是否为明天 ?(Y/n)')
+            print hackBook(room_id, seat_num, start_time, end_time, resDate)
+        elif a == '9':
+            print hackBook('19', '307', 7, 22, '2')
         else:
             print '输入错误, 请重新输入'

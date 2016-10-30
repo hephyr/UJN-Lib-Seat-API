@@ -93,14 +93,15 @@ def cmdGetBuildingInfo(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text=text)
 
 
-def cmdGetSeatTime(bot, update, args):
+def cmdGetSeatInfo(bot, update, args):
     bot.sendChatAction(chat_id=update.message.chat_id,
                        action=telegram.ChatAction.TYPING)
     person = PersonLib()
     room_id = args[0]
     seat_num = args[1]
-    seat_id = person.getSeatId(room_id, seat_num)
-    text = person.getSeatTime(seat_id)
+    if len(args == 3) and args[2] == '2':
+        resDate = '2'
+    text = std.getSeatInfo(room_id, seat_num, resDate)
     bot.sendMessage(chat_id=update.message.chat_id, text=text)
 
 
@@ -125,7 +126,7 @@ photo_handler = CommandHandler('num', cmdPhoto,  pass_args=True)
 girl_random_handler = CommandHandler('girl', randomPhoto)
 red_handler = CommandHandler('red', cmdRed)
 building_info_handler = CommandHandler('building', cmdGetBuildingInfo)
-seat_time_handler = CommandHandler('seat', cmdGetSeatTime, pass_args=True)
+seat_time_handler = CommandHandler('seat', cmdGetSeatInfo, pass_args=True)
 get_seat_handler = CommandHandler('get', cmdGetSeat, pass_args=True)
 dispatcher.add_handler(echo_handler)
 dispatcher.add_handler(photo_handler)
