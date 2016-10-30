@@ -81,7 +81,7 @@ class PersonLib(object):
     def getSeatInfo(self, room_id, seat_num, resDate):
         self.setDate(resDate)
         seat_id = self.getSeatId(room_id, seat_num)
-        return std.getSeatTime(seat_id)
+        return self.getSeatTime(seat_id)
 
     def quickBook(self, hour):
         post_data = {

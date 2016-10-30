@@ -99,9 +99,10 @@ def cmdGetSeatInfo(bot, update, args):
     person = PersonLib()
     room_id = args[0]
     seat_num = args[1]
-    if len(args == 3) and args[2] == '2':
+    resDate = '1'
+    if len(args) == 3 and args[2] == '2':
         resDate = '2'
-    text = std.getSeatInfo(room_id, seat_num, resDate)
+    text = person.getSeatInfo(room_id, seat_num, resDate)
     bot.sendMessage(chat_id=update.message.chat_id, text=text)
 
 
