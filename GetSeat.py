@@ -191,7 +191,7 @@ def hackBook(room_id, seat_num, start_time, end_time, resDate):
     with open('can_use.txt', 'r') as f:
         lines = f.readlines()
     spent = int(end_time) - int(start_time)
-    res_time = range(int(start_time), int(end_time) + 1)
+    res_time = range(int(start_time), int(end_time))
     random_lines = random.sample(lines, spent*3)
     i = 0
     text = ''
