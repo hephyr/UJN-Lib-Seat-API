@@ -7,4 +7,6 @@ Python下requests库的运用, 了解了json, 并且提高了程序的稳定性
 - [x] 座次排序输出
 - [x] 显示能否直接预约最晚时间的座位
 - [x] 自选座位直接输入座位号选座
+- [x] Telegram Bot
+- [ ] QT
 - [ ] Phone APP

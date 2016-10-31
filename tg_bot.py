@@ -114,10 +114,14 @@ def cmdGetSeat(bot, update, args):
     start_time = args[2]
     end_time = args[3]
     resDate = '1'
-    if len(args == 5) and args[4] == '2':
+    if len(args) == 5 and args[4] == '2':
         resDate = '2'
-    text = hackBook(room_id, seat_num, start_time, end_time, resDate)
-    bot.sendMessage(chat_id=update.message.chat_id, text=text)
+    t = room_id + seat_num + start_time + end_time + resDate
+    try:
+        text = hackBook(room_id, seat_num, start_time, end_time, resDate)
+        bot.sendMessage(chat_id=update.message.chat_id, text=text)
+    except BaseException, e:
+        bot.sendMessage(chat_id=update.message.chat_id, text=str(e))
 
 echo_handler = MessageHandler([Filters.text,
                                Filters.photo,
