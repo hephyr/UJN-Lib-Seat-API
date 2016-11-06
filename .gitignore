@@ -1,3 +1,3 @@
 *.pyc
 howmany.py
-bot_token.txt
+*.txt
