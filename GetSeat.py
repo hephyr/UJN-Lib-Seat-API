@@ -69,7 +69,20 @@ class PersonLib(object):
         else:
             return page_json['message']
 
+    def getBuildingsList(self):
+        # return a list contain tuple for web
+        url = 'http://seat.ujn.edu.cn/rest/v2/room/stats2/2?token=%s' % self.token
+        r = requests.get(url)
+        page_json = json.loads(r.text)
+        building_list = []
+        for value in page_json['data']:
+            building_list.append(
+                            (str(value['roomId']),
+                             str(value['floor']) + u'楼' + value['room']))
+        return building_list
+
     def getSeatTime(self, seat_id):
+        # return text for human
         url = 'http://seat.ujn.edu.cn/rest/v2/startTimesForSeat/%s/%s?token=%s' % (seat_id, self.date, self.token)
         r = requests.get(url)
         page_json = json.loads(r.text)
@@ -77,6 +90,16 @@ class PersonLib(object):
         for i in page_json['data']['startTimes']:
             text += i['value'] + u'\n'
         return text
+
+    def getSeatStartTimeList(self, seat_id):
+        # return a list contain tuple for web
+        url = 'http://seat.ujn.edu.cn/rest/v2/startTimesForSeat/%s/%s?token=%s' % (seat_id, self.date, self.token)
+        r = requests.get(url)
+        page_json = json.loads(r.text)
+        time_list = []
+        for i in page_json['data']['startTimes']:
+            time_list.append((i['id'], i['value']))
+        return time_list
 
     def getSeatInfo(self, room_id, seat_num, resDate):
         self.setDate(resDate)
