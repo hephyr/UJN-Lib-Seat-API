@@ -24,6 +24,7 @@ class PersonLib(object):
             return False
 
     def getToken(self):
+        # 获取token
         url = 'http://seat.ujn.edu.cn/rest/auth?username=%s&password=%s' % (self.ac, self.pw)
         r = requests.get(url)
         page_json = json.loads(r.text)
@@ -33,6 +34,7 @@ class PersonLib(object):
             raise TypeError('Wrong account or password')
 
     def checkToken(self):
+        # 检测token是否过期
         url = 'http://seat.ujn.edu.cn/rest/v2/user/reservations?token=%s' % self.token
         r = requests.get(url)
         page = r.text
@@ -42,12 +44,14 @@ class PersonLib(object):
             return True
 
     def setDate(self, choose):
+        # 设置预约日期
         if choose == '2' or choose.lower() == 'y':
             self.date = self.dates[1]
         else:
             self.date = self.dates[0]
 
     def getDatetime(self):
+        # 获取日期
         url = 'http://seat.ujn.edu.cn/rest/v2/free/filters'
         data = {'token': self.token}
         r = requests.post(url, data)
@@ -56,6 +60,7 @@ class PersonLib(object):
         return date
 
     def getBuildingsInfo(self):
+        # 获取楼层信息
         url = 'http://seat.ujn.edu.cn/rest/v2/room/stats2/2?token=%s' % self.token
         r = requests.get(url)
         page_json = json.loads(r.text)
@@ -102,11 +107,13 @@ class PersonLib(object):
         return time_list
 
     def getSeatInfo(self, room_id, seat_num, resDate):
+        # 获取座位状态
         self.setDate(resDate)
         seat_id = self.getSeatId(room_id, seat_num)
         return self.getSeatTime(seat_id)
 
     def quickBook(self, hour):
+        # 快速预约
         post_data = {
             "token": self.token,
             "building": "2",
@@ -127,6 +134,7 @@ class PersonLib(object):
             return data + page_json['message']
 
     def freeBook(self, start_time, end_time, seat_id):
+        # 预约座位
         start = int(start_time) * 60
         end = int(end_time) * 60
         url = 'http://seat.ujn.edu.cn/rest/v2/freeBook'
@@ -145,6 +153,7 @@ class PersonLib(object):
             return True
 
     def getSeatId(self, room_id, seat_num):
+        # 获取座位id
         if len(seat_num) < 3:
             # 对座位号补零
             zero = (3 - len(seat_num)) * '0'
@@ -161,44 +170,45 @@ class PersonLib(object):
                 return seat['id']
 
     def checkIn(self):
+        # 签到
         url = 'http://seat.ujn.edu.cn/rest/v2/checkIn?token=%s' % self.token
         r = requests.get(url)
         page_json = json.loads(r.text)
         return page_json['message']
 
-    def stop(self):
+    def exit(self):
+        # 退出登录
         url = 'http://seat.ujn.edu.cn/rest/v2/stop?token=%s' % self.token
         r = requests.get(url)
         page_json = json.loads(r.text)
         return page_json['message']
 
     def getMaxTime(self):
+        # 获取最大可预约时间
         url = 'http://seat.ujn.edu.cn/rest/v2/allowedHours?token=%s' % self.token
         r = requests.get(url)
         page_json = json.loads(r.text)
         return r.text
 
     def getHistory(self):
+        # 获取预约历史
         # 1是页数从1开始 10为每页显示个数
-        url = 'http://seat.ujn.edu.cn/rest/v2/history/1/10?token=%s' % self.token
+        page = 1
+        count = 10
+        url = 'http://seat.ujn.edu.cn/rest/v2/history/%d/%d?token=%s' % (page, count, self.token)
         r = requests.get(url)
         page_json = json.loads(r.text)
         res = page_json['data']['reservations']
         return res
-        # for re in res:
-        #     for k in re:
-        #         if re[k] is None:
-        #             continue
-        #         elif isinstance(re[k], int):
-        #             re[k] = str(re[k])
-        #         print k + ' : ' + re[k]
 
     def isInUse(self):
+        # 检测账号是否正在使用
         res = self.getHistory()
         reserve = [i for i in res if i['stat'] == 'CHECK_IN' or i['stat'] == 'RESERVE']
         return False if len(reserve) == 0 else True
 
     def cancelRes(self):
+        # 取消预约
         res = self.getHistory()
         reserve = [i for i in res if i['stat'] == 'RESERVE']
         if len(reserve) == 0:
@@ -211,6 +221,7 @@ class PersonLib(object):
 
 
 def hackBook(room_id, seat_num, start_time, end_time, resDate):
+    # 黑科技
     with open('can_use.txt', 'r') as f:
         lines = f.readlines()
     spent = int(end_time) - int(start_time)
