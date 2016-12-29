@@ -123,9 +123,9 @@ def cmdGetSeat(bot, update, args):
     except BaseException, e:
         bot.sendMessage(chat_id=update.message.chat_id, text=str(e))
 
-echo_handler = MessageHandler([Filters.text,
-                               Filters.photo,
-                               Filters.status_update],
+echo_handler = MessageHandler((Filters.text |
+                               Filters.photo |
+                               Filters.status_update),
                               echo)
 photo_handler = CommandHandler('num', cmdPhoto,  pass_args=True)
 girl_random_handler = CommandHandler('girl', randomPhoto)
