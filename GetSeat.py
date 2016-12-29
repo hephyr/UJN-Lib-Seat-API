@@ -292,7 +292,5 @@ if __name__ == '__main__':
             end_time = raw_input('请输入结束时间(24进制):')
             resDate = raw_input('是否为明天 ?(Y/n)')
             print hackBook(room_id, seat_num, start_time, end_time, resDate)
-        elif a == '9':
-            print hackBook('19', '307', 7, 22, '2')
         else:
             print '输入错误, 请重新输入'
