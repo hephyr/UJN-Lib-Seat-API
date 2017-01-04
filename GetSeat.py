@@ -237,6 +237,9 @@ def hackBook(room_id, seat_num, start_time, end_time, resDate):
             p = PersonLib(ap)
             if p.isInUse():
                 continue
+            else:
+                with open('used.txt', 'a') as f:
+                    f.write(line)
         except TypeError:
             continue
         finally:
