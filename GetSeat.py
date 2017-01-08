@@ -171,8 +171,12 @@ class PersonLib(object):
 
     def checkIn(self):
         # 签到
+        headers = {
+            'Client-Ip': '172.16.219.219',
+            'X-Forwarded-For': '172.16.219.219'
+        }
         url = 'http://seat.ujn.edu.cn/rest/v2/checkIn?token=%s' % self.token
-        r = requests.get(url)
+        r = requests.get(url, headers=headers)
         page_json = json.loads(r.text)
         return page_json['message']
 
