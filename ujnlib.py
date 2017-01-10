@@ -5,105 +5,47 @@ import json
 import random
 import requests
 
+from api import *
 
-class PersonLib(object):
-    def __init__(self, *account):
-        base_url = 'http://seat.ujn.edu.cn/'
-        l = len(account)
-        if l == 0:
-            self.ac = self.pw = '220141222001'
-        elif l == 1:
-            self.ac = self.pw = account[0]
-        else:
-            self.ac = account[0]
-            self.pw = account[1]
-        self.token = self.getToken()
-        self.dates = self.getDatetime()
-        self.date = self.dates[0]
-        if self.token is False:
-            return False
 
-    def getToken(self):
-        # 获取token
-        url = 'http://seat.ujn.edu.cn/rest/auth?username=%s&password=%s' % (self.ac, self.pw)
-        r = requests.get(url)
-        page_json = json.loads(r.text)
-        if page_json['status'] == 'success':
-            return page_json['data']['token']
-        else:
-            raise TypeError('Wrong account or password')
-
-    def checkToken(self):
-        # 检测token是否过期
-        url = 'http://seat.ujn.edu.cn/rest/v2/user/reservations?token=%s' % self.token
-        r = requests.get(url)
-        page = r.text
-        if page.find('success') == -1:
-            return False
-        else:
-            return True
-
-    def setDate(self, choose):
-        # 设置预约日期
-        if choose == '2' or choose.lower() == 'y':
-            self.date = self.dates[1]
-        else:
-            self.date = self.dates[0]
-
-    def getDatetime(self):
-        # 获取日期
-        url = 'http://seat.ujn.edu.cn/rest/v2/free/filters'
-        data = {'token': self.token}
-        r = requests.post(url, data)
-        page_json = json.loads(r.text)
-        date = page_json['data']['dates']
-        return date
-
+class ujnlib(UJNLibApi):
     def getBuildingsInfo(self):
         # 获取楼层信息
-        url = 'http://seat.ujn.edu.cn/rest/v2/room/stats2/2?token=%s' % self.token
-        r = requests.get(url)
-        page_json = json.loads(r.text)
-        if page_json['status'] == 'success':
+        info = self.building()
+        if info.status == 'success':
             data = ''
-            for value in page_json['data']:
-                data += 'id:' + str(value['roomId']) + value['room']
-                data += u' 楼层:' + str(value['floor'])
-                data += u' 剩余:' + str(value['free']) + '\n'
+            for value in info.data:
+                data += 'id:' + str(value.roomId) + value.room
+                data += u' 楼层:' + str(value.floor)
+                data += u' 剩余:' + str(value.free) + '\n'
             return data
         else:
-            return page_json['message']
+            return info.message
 
     def getBuildingsList(self):
         # return a list contain tuple for web
-        url = 'http://seat.ujn.edu.cn/rest/v2/room/stats2/2?token=%s' % self.token
-        r = requests.get(url)
-        page_json = json.loads(r.text)
+        info = self.building()
         building_list = []
-        for value in page_json['data']:
+        for value in info.data:
             building_list.append(
-                            (str(value['roomId']),
-                             str(value['floor']) + u'楼' + value['room']))
+                            (str(value.roomId),
+                             str(value.floor) + u'楼' + value.room))
         return building_list
 
     def getSeatTime(self, seat_id):
         # return text for human
-        url = 'http://seat.ujn.edu.cn/rest/v2/startTimesForSeat/%s/%s?token=%s' % (seat_id, self.date, self.token)
-        r = requests.get(url)
-        page_json = json.loads(r.text)
+        info = self.getSeatStartTime(seat_id)
         text = u'可开始时间\n'
-        for i in page_json['data']['startTimes']:
-            text += i['value'] + u'\n'
+        for i in info.data.startTimes:
+            text += i.value + u'\n'
         return text
 
     def getSeatStartTimeList(self, seat_id):
         # return a list contain tuple for web
-        url = 'http://seat.ujn.edu.cn/rest/v2/startTimesForSeat/%s/%s?token=%s' % (seat_id, self.date, self.token)
-        r = requests.get(url)
-        page_json = json.loads(r.text)
+        info = self.getSeatStartTime()
         time_list = []
-        for i in page_json['data']['startTimes']:
-            time_list.append((i['id'], i['value']))
+        for i in info.data.startTimes:
+            time_list.append((i.id, i.value))
         return time_list
 
     def getSeatInfo(self, room_id, seat_num, resDate):
@@ -112,42 +54,23 @@ class PersonLib(object):
         seat_id = self.getSeatId(room_id, seat_num)
         return self.getSeatTime(seat_id)
 
-    def quickBook(self, hour):
+    def quick(self, hour, building='2'):
         # 快速预约
-        post_data = {
-            "token": self.token,
-            "building": "2",
-            "hour": hour
-        }
-        url = 'http://seat.ujn.edu.cn/rest/v2/quickBook'
-        r = requests.post(url, post_data)
-        page_json = json.loads(r.text)
-        data = ''
-        if page_json['status'] != 'success':
-            data = '预约失败' + page_json['message']
-            return data
+        info = self.quickBook(hour, building)
+        data = u''
+        if info.status != 'success':
+            return info.message
         else:
-            data += '日期: ' + page_json['data']['reservation']['onDate'] + '/n'
-            data += '开始时间: ' + page_json['data']['reservation']['begin'] + '/n'
-            data += '结束时间: ', page_json['data']['reservation']['end'] + '/n'
-            data += '地点: ', page_json['data']['reservation']['location'] + '/n'
-            return data + page_json['message']
+            data += u'日期: ' + info.data.reservation.onDate + '/n'
+            data += u'开始时间: ' + info.data.reservation.begin + '/n'
+            data += u'结束时间: ', info.data.reservation.end + '/n'
+            data += u'地点: ', info.data.reservation.location + '/n'
+            return data + info.message
 
-    def freeBook(self, start_time, end_time, seat_id):
+    def free(self, start_time, end_time, seat_id):
         # 预约座位
-        start = int(start_time) * 60
-        end = int(end_time) * 60
-        url = 'http://seat.ujn.edu.cn/rest/v2/freeBook'
-        post_data = {
-            'token': self.token,
-            'startTime': str(start),
-            'endTime': str(end),
-            'seat': seat_id,
-            'date': self.date
-        }
-        r = requests.post(url, post_data)
-        page_json = json.loads(r.text)
-        if page_json['status'] == 'fail':
+        info = self.freeBook(start_time, end_time, seat_id)
+        if info.status == 'fail':
             return False
         else:
             return True
@@ -158,70 +81,21 @@ class PersonLib(object):
             # 对座位号补零
             zero = (3 - len(seat_num)) * '0'
             seat_num = zero + seat_num
-        url = 'http://seat.ujn.edu.cn/rest/v2/room/layoutByDate/%s/%s/?token=%s' % (room_id, self.date, self.token)
-        r = requests.get(url)
-        page_json = json.loads(r.text)
-        if page_json['status'] != 'success':
-            return page_json['message']
-        data = page_json['data']
-        seats = [i for i in data['layout'].values() if i['type'] == 'seat']
+        info = self.layoutByDate(room_id)
+        if info.status != 'success':
+            return info.message
+        data = info.data
+        seats = [i for i in data.layout.values() if i.type == 'seat']
         for seat in seats:
-            if seat['name'] == seat_num:
-                return seat['id']
-
-    def checkIn(self):
-        # 签到
-        headers = {
-            'Client-Ip': '172.16.219.219',
-            'X-Forwarded-For': '172.16.219.219'
-        }
-        url = 'http://seat.ujn.edu.cn/rest/v2/checkIn?token=%s' % self.token
-        r = requests.get(url, headers=headers)
-        page_json = json.loads(r.text)
-        return page_json['message']
-
-    def exit(self):
-        # 退出登录
-        url = 'http://seat.ujn.edu.cn/rest/v2/stop?token=%s' % self.token
-        r = requests.get(url)
-        page_json = json.loads(r.text)
-        return page_json['message']
-
-    def getMaxTime(self):
-        # 获取最大可预约时间
-        url = 'http://seat.ujn.edu.cn/rest/v2/allowedHours?token=%s' % self.token
-        r = requests.get(url)
-        page_json = json.loads(r.text)
-        return r.text
-
-    def getHistory(self):
-        # 获取预约历史
-        # 1是页数从1开始 10为每页显示个数
-        page = 1
-        count = 10
-        url = 'http://seat.ujn.edu.cn/rest/v2/history/%d/%d?token=%s' % (page, count, self.token)
-        r = requests.get(url)
-        page_json = json.loads(r.text)
-        res = page_json['data']['reservations']
-        return res
+            if seat.name == seat_num:
+                return seat.id
 
     def isInUse(self):
         # 检测账号是否正在使用
-        res = self.getHistory()
-        reserve = [i for i in res if i['stat'] == 'CHECK_IN' or i['stat'] == 'RESERVE']
-        return False if len(reserve) == 0 else True
-
-    def cancelRes(self):
-        # 取消预约
-        res = self.getHistory()
-        reserve = [i for i in res if i['stat'] == 'RESERVE']
-        if len(reserve) == 0:
-            return '没有预约的座位'
-        resid = reserve[0]['id']
-        url = 'http://seat.ujn.edu.cn/rest/v2/cancel/%s?token=%s' % (resid, self.token)
-        r = requests.get(url)
-        page_json = json.loads(r.text)
-        return page_json['status']
+        info = self.getHistory()
+        res = info.data.reservations
+        reserve = [i for i in res if i.stat == 'CHECK_IN' or i.stat == 'RESERVE']
+        return True if reserve else False
 
 
 def hackBook(room_id, seat_num, start_time, end_time, resDate):
@@ -238,7 +112,7 @@ def hackBook(room_id, seat_num, start_time, end_time, resDate):
         ap = line[:-1]
         t = res_time[0]
         try:
-            p = PersonLib(ap)
+            p = ujnlib(ap)
             if p.isInUse():
                 continue
             else:
@@ -275,9 +149,14 @@ def menu():
     '''
     return menu
 
+
+def main():
+    pass
+
+
 if __name__ == '__main__':
     while True:
-        std = PersonLib()
+        std = ujnlib()
         if not std.checkToken():
             print 'token error, 请重新登录'
             continue

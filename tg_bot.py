@@ -10,7 +10,7 @@ import telegram
 from telegram.ext import Updater
 from telegram.ext import MessageHandler, Filters, CommandHandler
 
-from GetSeat import *
+from ujnlib import *
 
 updater = Updater(token='247176950:AAFaJefszLKQlqy1YpOXTA60lT8ZjZ8eQsw')
 dispatcher = updater.dispatcher
@@ -88,7 +88,7 @@ def cmdRed(bot, update):
 def cmdGetBuildingInfo(bot, update):
     bot.sendChatAction(chat_id=update.message.chat_id,
                        action=telegram.ChatAction.TYPING)
-    person = PersonLib()
+    person = ujnlib()
     text = person.getBuildingsInfo()
     bot.sendMessage(chat_id=update.message.chat_id, text=text)
 
@@ -96,7 +96,7 @@ def cmdGetBuildingInfo(bot, update):
 def cmdGetSeatInfo(bot, update, args):
     bot.sendChatAction(chat_id=update.message.chat_id,
                        action=telegram.ChatAction.TYPING)
-    person = PersonLib()
+    person = ujnlib()
     room_id = args[0]
     seat_num = args[1]
     resDate = '1'
