@@ -47,8 +47,6 @@ class UJNLibApi(object):
         return json.loads(json_str, object_hook=_obj_hook)
 
     def requests_call(self, method, url, headers={}, params=None, data=None, stream=False):
-        headers['Client-Ip'] = '172.16.219.219'
-        headers['X-Forwarded-For'] = '172.16.219.219'
         if (method == 'GET'):
             return requests.get(url, params=params, headers=headers, stream=stream)
         elif (method == 'POST'):
