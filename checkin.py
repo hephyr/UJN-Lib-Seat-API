@@ -3,14 +3,20 @@
 import socket
 
 from ujnlib import *
+from conf import *
 
 
 def getUsingList():
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('202.194.67.74', 23333))
-    data = s.recv(1024).decode('utf-8')
-    s.close()
-    return data.split()
+    if SERVER:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((SERVER, PORT))
+        data = s.recv(1024).decode('utf-8')
+        s.close()
+        return data.split()
+    else:
+        with open('using.txt', 'r') as f:
+            using_list = f.readlines()
+        return [i[:-1] for i in using_list]
 
 
 def checkIn():

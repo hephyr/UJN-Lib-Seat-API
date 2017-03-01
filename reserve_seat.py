@@ -18,8 +18,14 @@ def randomLogin():
 
 def getSeatList():
     with open('seat.txt', 'r') as f:
-        seats = f.readlines()
-        return [seat[:-1] for seat in seats]
+        seats_str = f.readlines()
+    seats = []
+    for seat_json in seats_str:
+        data = json.loads(seat)
+        p = ujnlib()
+        seat = p.getSeatId(data['room_id'], data['seat_id'])
+        seats.append(seat)
+    return seats
 
 
 def writeToUsing(username):
@@ -31,14 +37,14 @@ def reserve(t):
     seats = getSeatList()
     for seat in seats:
         p = randomLogin()
-        # p.setDate('2')
-        p.freeBook(t[0], t[1], seat)
-        writeToUsing(p.ac)
+        p.setDate('2')
+        option = p.free(t[0], t[1], seat)
+        if option:
+            writeToUsing(p.ac)
 
 
 def main():
-    # times = [(8, 12), (12, 16), (16, 20)]
-    times = [(16, 17)]
+    times = [(8, 9), (9, 10), (10, 11), (11, 12), (12, 13), (13, 14), (14, 15), (15, 16), (16, 17), (17, 18), (18, 19), (19, 20)]
     for t in times:
         reserve(t)
 

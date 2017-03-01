@@ -3,6 +3,8 @@
 import socket
 import threading
 
+from conf import *
+
 
 def tcplink(sock, addr):
     with open('using.txt', 'r') as f:
@@ -15,7 +17,7 @@ def tcplink(sock, addr):
 
 def main():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(('0.0.0.0', 23333))
+    s.bind((SERVER, PORT))
     s.listen(5)
     while True:
         sock, addr = s.accept()
