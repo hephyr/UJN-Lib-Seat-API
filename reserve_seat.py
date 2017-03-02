@@ -11,13 +11,16 @@ def randomLogin():
             lines = f.readlines()
         i = random.randint(0, len(lines) - 1)
         username = lines[i]
-        p = ujnlib(username[:-1])
-        if not p.isInUse():
-            return p
+        try:
+            p = ujnlib(username[:-1])
+            if not p.isInUse():
+                return p
+        except Exception:
+            pass
 
 
 def getSeatList():
-    with open('seat.txt', 'r') as f:
+    with open('seat.json', 'r') as f:
         seats_str = f.readlines()
     seats = []
     for seat_json in seats_str:
@@ -58,7 +61,7 @@ def reserve(t):
 
 
 def main():
-    times = [(8, 9), (9, 10), (10, 11), (11, 12), (12, 13), (13, 14), (14, 15), (15, 16), (16, 17), (17, 18), (18, 19), (19, 20)]
+    times = [(8, 10), (10, 12), (12, 14), (14, 16), (16, 18), (18, 20)]
     for t in times:
         reserve(t)
     cleanUsing()

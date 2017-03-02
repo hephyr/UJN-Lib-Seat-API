@@ -158,25 +158,25 @@ if __name__ == '__main__':
     while True:
         std = ujnlib()
         if not std.checkToken():
-            print 'token error, 请重新登录'
+            print('token error, 请重新登录')
             continue
 
         a = raw_input(menu())
         if a == '0':
             break
         elif a == '1':
-            print std.getBuildingsInfo()
+            print(std.getBuildingsInfo())
         elif a == '2':
             room_id = raw_input('阅览室id:')
             seat_num = raw_input('座位号:')
             resDate = raw_input('是否为明天 ?(Y/n)')
-            print std.getSeatInfo(room_id, seat_num, resDate)
+            print(std.getSeatInfo(room_id, seat_num, resDate))
         elif a == '3':
             room_id = raw_input('阅览室id:')
             seat_num = raw_input('座位号:')
             start_time = raw_input('请输入开始时间(24进制):')
             end_time = raw_input('请输入结束时间(24进制):')
             resDate = raw_input('是否为明天 ?(Y/n)')
-            print hackBook(room_id, seat_num, start_time, end_time, resDate)
+            print(hackBook(room_id, seat_num, start_time, end_time, resDate))
         else:
-            print '输入错误, 请重新输入'
+            print('输入错误, 请重新输入')
