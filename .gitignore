@@ -1,3 +1,4 @@
 *.pyc
-howmany.py
 *.txt
+test.py
+*.json
