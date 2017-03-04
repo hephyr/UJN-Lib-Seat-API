@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import json
 import random
 
 from ujnlib import *
@@ -21,33 +22,36 @@ def randomLogin():
 
 def getSeatList():
     with open('seat.json', 'r') as f:
-        seats_str = f.readlines()
+        seats_json = json.load(f)
     seats = []
-    for seat_json in seats_str:
-        data = json.loads(seat_json)
+    for data in seats_json:
         p = ujnlib()
         seat = p.getSeatId(data['room_id'], data['seat_num'])
         seats.append(seat)
     return seats
 
 
-def writeToUsing(username):
-    with open('using.txt', 'a') as f:
-        f.write(str(username) + '\n')
+def writeToUsing(username, begin, end):
+    with open('using.json', 'r') as f:
+        using = json.load(f)
+    data = {'username': username,
+            'begin': begin,
+            'end': end}
+    using.append(data)
+    with open('using.json', 'w') as f:
+        json.dump(using, f, indent=4)
 
 
 def cleanUsing():
-    with open('using.txt', 'r') as f:
-        using_list = f.readlines()
-    users = [i[:-1] for i in using_list]
+    with open('using.json', 'r') as f:
+        using_list = json.load(f)
     final_users = []
-    for user in users:
-        p = ujnlib(user)
+    for user in using_list:
+        p = ujnlib(user['username'])
         if p.isInUse():
             final_users.append(user)
-    with open('using.txt', 'w') as f:
-        for user in final_users:
-            f.write(user + '\n')
+    with open('using.json', 'w') as f:
+        json.dump(final_users, f, indent=4)
 
 
 def reserve(t):
@@ -57,7 +61,7 @@ def reserve(t):
         p.setDate('2')
         option = p.free(t[0], t[1], seat)
         if option:
-            writeToUsing(p.ac)
+            writeToUsing(p.ac, t[0], t[1])
 
 
 def main():

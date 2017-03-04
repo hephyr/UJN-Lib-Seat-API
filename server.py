@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import time
+import json
 import socket
 import threading
 
@@ -7,8 +9,10 @@ from conf import *
 
 
 def tcplink(sock, addr):
-    with open('using.txt', 'r') as f:
-        using_list = [i[:-1] for i in f.readlines()]
+    with open('using.json', 'r') as f:
+        using_json = json.load(f)
+        hour = int(time.strftime("%H"))
+        using_list = [i['username'] for i in using_json if i['begin'] == hour or i['begin'] == hour + 1]
     s = ' '
     users = s.join(using_list)
     sock.send(users)
