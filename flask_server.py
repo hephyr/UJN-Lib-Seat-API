@@ -2,11 +2,27 @@
 # -*- coding: utf-8 -*-
 import time
 import json
+from functools import wraps
 
-from flask import Flask
+from flask import Flask, request, current_app, jsonify
 
 from ujnlib import *
 app = Flask(__name__)
+
+
+def jsonp(func):
+    """Wraps JSONified output for JSONP requests."""
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        callback = request.args.get('callback', False)
+        if callback:
+            data = str(func(*args, **kwargs).data)
+            content = str(callback) + '(' + data + ')'
+            mimetype = 'application/javascript'
+            return current_app.response_class(content, mimetype=mimetype)
+        else:
+            return func(*args, **kwargs)
+    return decorated_function
 
 
 def getUsername():
@@ -26,13 +42,17 @@ def getToken():
 
 
 @app.route('/username')
+@jsonp
 def username():
-    return json.dumps(getUsername())
+    global count
+    return jsonify(getUsername())
 
 
 @app.route('/token')
+@jsonp
 def token():
-    return json.dumps(getToken())
+    return jsonify(getToken())
+
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=8080)

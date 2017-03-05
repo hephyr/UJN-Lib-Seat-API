@@ -1,0 +1,31 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <script type="text/javascript" src="js/jquery.min.js"></script>
+  <script type="text/javascript">
+    jQuery(document).ready(function(){
+        $.ajax({
+          type: "get",
+          async: false,
+          url: "http://202.194.67.74:8080/token",
+          dataType: "jsonp",
+          jsonp: "callback",
+          success: function(data) {
+            for (var token in data) {
+              $.ajax({
+                type: "get",
+                async: false,
+                url: "http://seat.ujn.edu.cn/rest/v2/checkIn?token="+data[token],
+                dataType: "jsonp",
+                jsonp: "callback"
+              });
+            }
+          }
+        });
+     });
+  </script>
+</head>
+<body>
+  <div id="myDiv"><h3>等一会</h3></div>
+</body>
+</html>
