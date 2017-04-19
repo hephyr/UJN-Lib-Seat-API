@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import json
+import codecs
 import random
 
 from ujnlib import *
@@ -23,35 +24,30 @@ def randomLogin():
 def getSeatList():
     with open('seat.json', 'r') as f:
         seats_json = json.load(f)
-    seats = []
-    for data in seats_json:
-        p = ujnlib()
-        seat = p.getSeatId(data['room_id'], data['seat_num'])
-        seats.append(seat)
-    return seats
+    return seats_json
 
 
-def writeToUsing(username, begin, end):
-    with open('using.json', 'r') as f:
+def writeToUsing(p):
+    with codecs.open('using.json', 'r') as f:
         using = json.load(f)
-    data = {'username': username,
-            'begin': begin,
-            'end': end}
-    using.append(data)
-    with open('using.json', 'w') as f:
-        json.dump(using, f, indent=4)
+    history = p.getHistory()
+    data = {'username': p.ac}
+    d = dict(data, **history.data.reservations[0])
+    using.append(d)
+    with codecs.open('using.json', 'w', 'utf-8') as f:
+        json.dump(using, f, ensure_ascii=False, indent=4)
 
 
 def cleanUsing():
-    with open('using.json', 'r') as f:
+    with codecs.open('using.json', 'r', 'utf-8') as f:
         using_list = json.load(f)
     final_users = []
     for user in using_list:
         p = ujnlib(user['username'])
         if p.isInUse():
             final_users.append(user)
-    with open('using.json', 'w') as f:
-        json.dump(final_users, f, indent=4)
+    with codecs.open('using.json', 'w', 'utf-8') as f:
+        json.dump(final_users, f, ensure_ascii=False, indent=4)
 
 
 def reserve(t):
@@ -59,13 +55,13 @@ def reserve(t):
     for seat in seats:
         p = randomLogin()
         p.setDate('2')
-        option = p.free(t[0], t[1], seat)
+        option = p.book(t[0], t[1], seat['room_id'], seat['seat_num'])
         if option:
-            writeToUsing(p.ac, t[0], t[1])
+            writeToUsing(p)
 
 
 def main():
-    times = [(8, 10), (10, 12), (12, 14), (14, 16), (16, 18), (18, 20)]
+    times = [(10, 12), (12, 16), (16, 20)]
     for t in times:
         reserve(t)
     cleanUsing()

@@ -29,7 +29,8 @@ def getUsername():
     with open('using.json', 'r') as f:
         using_list = json.load(f)
     hour = int(time.strftime("%H"))
-    return [i['username'] for i in using_list if i['begin'] == hour or i['begin'] == hour + 1]
+    date = time.strftime("%Y-%-m-%-d")
+    return [i['username'] for i in using_list if i['date'] == date and (i['begin'][:2] == str(hour) or i['begin'][:2] == str(hour+1))]
 
 
 def getToken():
@@ -52,6 +53,21 @@ def username():
 @jsonp
 def token():
     return jsonify(getToken())
+
+
+@app.route('/res', methods=['POST'])
+@jsonp
+def reservation():
+    room_id = request.form['room_id']
+    seat_num = request.form['seat_num']
+
+
+@app.route('/look')
+@jsonp
+def look():
+    with open('using.json', 'r') as f:
+        using_list = json.load(f)
+    return jsonify(using_list)
 
 
 if __name__ == '__main__':

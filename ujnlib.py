@@ -75,6 +75,12 @@ class ujnlib(UJNLibApi):
         else:
             return True
 
+    def book(self, start_time, end_time, room_id, seat_num):
+        # 预约座位
+        seat_id = self.getSeatId(room_id, seat_num)
+        return self.free(start_time, end_time, seat_id)
+
+
     def getSeatId(self, room_id, seat_num):
         # 获取座位id
         if len(seat_num) < 3:
