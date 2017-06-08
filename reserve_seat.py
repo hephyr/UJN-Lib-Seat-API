@@ -60,12 +60,8 @@ def reserve(t):
             writeToUsing(p)
 
 
-def main():
+if __name__ == '__main__':
     times = [(10, 12), (12, 16), (16, 20)]
     for t in times:
         reserve(t)
     cleanUsing()
-
-
-if __name__ == '__main__':
-    main()
