@@ -11,7 +11,7 @@ def getUsername():
         using_list = json.load(f)
     hour = int(time.strftime("%H"))
     date = time.strftime("%Y-%-m-%-d")
-    return [i['username'] for i in using_list if i['date'] == date and (i['begin'][:2] == str(hour))]
+    return [i['username'] for i in using_list if i['date'] == date and (i['begin'][:2] == str(hour+1))]
 
 
 def cancel():
