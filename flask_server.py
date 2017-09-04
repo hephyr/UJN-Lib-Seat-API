@@ -30,7 +30,7 @@ def getUsername():
         using_list = json.load(f)
     hour = int(time.strftime("%H"))
     date = time.strftime("%Y-%-m-%-d")
-    return [i['username'] for i in using_list if i['date'] == date and (i['begin'][:2] == str(hour) or i['begin'][:2] == str(hour+1))]
+    return [i['username'] for i in using_list if i['date'] == date and (int(i['begin'][:2]) == hour or int(i['begin'][:2]) == hour+1)]
 
 
 def getToken():

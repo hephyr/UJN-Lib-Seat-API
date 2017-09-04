@@ -50,11 +50,12 @@ def cleanUsing():
         json.dump(final_users, f, ensure_ascii=False, indent=4)
 
 
-def reserve(t):
+def reserve(t, date):
     seats = getSeatList()
     for seat in seats:
         p = randomLogin()
-        p.setDate('2')
+        if date != 1:
+            p.setDate('2')
         option = p.book(t[0], t[1], seat['room_id'], seat['seat_num'])
         if option:
             writeToUsing(p)
@@ -63,5 +64,5 @@ def reserve(t):
 if __name__ == '__main__':
     times = [(10, 12), (12, 16), (16, 20)]
     for t in times:
-        reserve(t)
+        reserve(t, 2)
     cleanUsing()
