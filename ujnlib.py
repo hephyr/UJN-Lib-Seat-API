@@ -83,6 +83,7 @@ class ujnlib(UJNLibApi):
 
     def getSeatId(self, room_id, seat_num):
         # 获取座位id
+        seat_num = str(seat_num)
         if len(seat_num) < 3:
             # 对座位号补零
             zero = (3 - len(seat_num)) * '0'

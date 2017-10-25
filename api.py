@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import urlparse
 import requests
 
 
@@ -21,8 +22,25 @@ class JsonDict(dict):
 class UJNLibApi(object):
     def __init__(self, *account):
         l = len(account)
+        self.base_url = 'http://202.194.76.30'
+        self.api = {
+            'getToken': 'rest/auth?username={}&password={}',
+            'checkToken': 'rest/v2/user/reservations?token={}',
+            'getDatetime': 'rest/v2/free/filters',
+            'building': 'rest/v2/room/stats2/2?token={}',
+            'getSeatStartTime': 'rest/v2/startTimesForSeat/{}/{}?token={}',
+            'quickBook': 'rest/v2/quickBook',
+            'freeBook': 'rest/v2/freeBook',
+            'layoutByDate': 'rest/v2/room/layoutByDate/{}/{}/?token={}',
+            'checkIn': 'rest/v2/checkIn?token={}',
+            'exit': 'rest/v2/stop?token={}',
+            'getMaxTime': 'rest/v2/allowedHours?token={}',
+            'getHistory': 'rest/v2/history/{}/{}?token={}',
+            'cancelRes': 'rest/v2/cancel/{}?token={}'
+        }
         if l == 0:
-            self.ac = self.pw = '220141222001'
+            self.ac = '220141222001'
+            self.pw = '100325'
         elif l == 1:
             self.ac = self.pw = account[0]
         else:
@@ -56,7 +74,8 @@ class UJNLibApi(object):
 
     def getToken(self):
         # 获取token
-        url = 'http://seat.ujn.edu.cn/rest/auth?username=%s&password=%s' % (self.ac, self.pw)
+        param = self.api['getToken'].format(self.ac, self.pw)
+        url = urlparse.urljoin(self.base_url, param)
         r = self.requests_call('GET', url)
         page_json = json.loads(r.text)
         if page_json['status'] == 'success':
@@ -66,7 +85,8 @@ class UJNLibApi(object):
 
     def checkToken(self):
         # 检测token是否过期
-        url = 'http://seat.ujn.edu.cn/rest/v2/user/reservations?token=%s' % self.token
+        param = self.api['checkToken'].format(self.token)
+        url = urlparse.urljoin(self.base_url, param)
         r = self.requests_call('GET', url)
         page = r.text
         if page.find('success') == -1:
@@ -83,7 +103,8 @@ class UJNLibApi(object):
 
     def getDatetime(self):
         # 获取日期
-        url = 'http://seat.ujn.edu.cn/rest/v2/free/filters'
+        param = self.api['getDatetime']
+        url = urlparse.urljoin(self.base_url, param)
         data = {'token': self.token}
         r = self.requests_call('POST', url, data=data)
         page_json = json.loads(r.text)
@@ -92,32 +113,36 @@ class UJNLibApi(object):
 
     def building(self):
         # 获取楼层信息
-        url = 'http://seat.ujn.edu.cn/rest/v2/room/stats2/2?token=%s' % self.token
+        param = self.api['building'].format(self.token)
+        url = urlparse.urljoin(self.base_url, param)
         r = self.requests_call('GET', url)
         return self.parse_json(r.text)
 
     def getSeatStartTime(self, seat_id):
         # return a list contain tuple for web
-        url = 'http://seat.ujn.edu.cn/rest/v2/startTimesForSeat/%s/%s?token=%s' % (seat_id, self.date, self.token)
+        param = self.api['getSeatStartTime'].format(seat_id, self.date, self.token)
+        url = urlparse.urljoin(self.base_url, param)
         r = self.requests_call('GET', url)
         return self.parse_json(r.text)
 
     def quickBook(self, hour, building='2'):
         # 快速预约
+        param = self.api['quickBook']
+        url = urlparse.urljoin(self.base_url, param)
         post_data = {
             "token": self.token,
             "building": building,
             "hour": hour
         }
-        url = 'http://seat.ujn.edu.cn/rest/v2/quickBook'
         r = self.requests_call('POST', url, data=post_data)
         return self.parse_json(r.text)
 
     def freeBook(self, start_time, end_time, seat_id):
         # 预约座位
+        param = self.api['freeBook']
+        url = urlparse.urljoin(self.base_url, param)
         start = int(start_time) * 60
         end = int(end_time) * 60
-        url = 'http://seat.ujn.edu.cn/rest/v2/freeBook'
         post_data = {
             'token': self.token,
             'startTime': str(start),
@@ -129,37 +154,43 @@ class UJNLibApi(object):
         return self.parse_json(r.text)
 
     def layoutByDate(self, room_id):
-        url = 'http://seat.ujn.edu.cn/rest/v2/room/layoutByDate/%s/%s/?token=%s' % (room_id, self.date, self.token)
+        param = self.api['layoutByDate'].format(room_id, self.date, self.token)
+        url = urlparse.urljoin(self.base_url, param)
         r = self.requests_call('GET', url)
         return self.parse_json(r.text)
 
     def checkIn(self):
         # 签到
-        url = 'http://seat.ujn.edu.cn/rest/v2/checkIn?token=%s' % self.token
+        param = self.api['checkIn'].format(self.token)
+        url = urlparse.urljoin(self.base_url, param)
         r = self.requests_call('GET', url)
         return self.parse_json(r.text)
 
     def exit(self):
         # 退出登录
-        url = 'http://seat.ujn.edu.cn/rest/v2/stop?token=%s' % self.token
+        param = self.api['exit'].format(self.token)
+        url = urlparse.urljoin(self.base_url, param)
         r = self.requests_call('GET', url)
         return self.parse_json(r.text)
 
     def getMaxTime(self):
         # 获取最大可预约时间
-        url = 'http://seat.ujn.edu.cn/rest/v2/allowedHours?token=%s' % self.token
+        param = self.api['getMaxTime'].format(self.token)
+        url = urlparse.urljoin(self.base_url, param)
         r = self.requests_call('GET', url)
         return self.parse_json(r.text)
 
     def getHistory(self, page=1, count=10):
         # 获取预约历史
         # 1是页数从1开始 10为每页显示个数
-        url = 'http://seat.ujn.edu.cn/rest/v2/history/%d/%d?token=%s' % (page, count, self.token)
+        param = self.api['getHistory'].format(page, count, self.token)
+        url = urlparse.urljoin(self.base_url, param)
         r = self.requests_call('GET', url)
         return self.parse_json(r.text)
 
     def cancelRes(self, resid):
-        url = 'http://seat.ujn.edu.cn/rest/v2/cancel/%s?token=%s' % (resid, self.token)
+        param = self.api['cancelRes'].format(resid, self.token)
+        url = urlparse.urljoin(self.base_url, param)
         r = self.requests_call('GET', url)
         return self.parse_json(r.text)
 

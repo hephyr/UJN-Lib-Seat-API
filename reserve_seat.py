@@ -9,12 +9,14 @@ from ujnlib import *
 
 def randomLogin():
     while True:
-        with open('can_use.txt', 'r') as f:
+        with open('new_use.txt', 'r') as f:
             lines = f.readlines()
         i = random.randint(0, len(lines) - 1)
-        username = lines[i]
+        s = lines[i]
+        username = s.split()[0]
+        password = s.split()[1]
         try:
-            p = ujnlib(username[:-1])
+            p = ujnlib(username, password)
             if not p.isInUse():
                 return p
         except Exception:
@@ -31,7 +33,7 @@ def writeToUsing(p):
     with codecs.open('using.json', 'r') as f:
         using = json.load(f)
     history = p.getHistory()
-    data = {'username': p.ac}
+    data = {'username': p.ac, 'password': p.pw}
     d = dict(data, **history.data.reservations[0])
     using.append(d)
     with codecs.open('using.json', 'w', 'utf-8') as f:
@@ -43,7 +45,7 @@ def cleanUsing():
         using_list = json.load(f)
     final_users = []
     for user in using_list:
-        p = ujnlib(user['username'])
+        p = ujnlib(user['username'], user['password'])
         if p.isInUse():
             final_users.append(user)
     with codecs.open('using.json', 'w', 'utf-8') as f:

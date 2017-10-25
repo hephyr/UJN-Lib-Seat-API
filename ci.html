@@ -1,24 +1,42 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+  <title>图书馆签到</title>
   <meta charset="utf-8">
-  <script type="text/javascript" src="js/jquery.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/hover-min.css" media="all">
+  <link rel="stylesheet" href="css/my.css">
+  <script src="js/bootstrap.js"></script>
+  <script src="js/jquery.min.js"></script>
   <script type="text/javascript">
     jQuery(document).ready(function(){
         $.ajax({
           type: "get",
           async: false,
-          url: "http://202.194.67.74:8080/token",
+          url: "http://123.207.137.126:8080/token",
+          // url: "http://202.194.67.74:8080/token",
           dataType: "jsonp",
           jsonp: "callback",
           success: function(data) {
+            var message = 'Hello World';
             for (var token in data) {
+              message = "http://202.194.76.30/rest/v2/checkIn?token="+data[token];
               $.ajax({
                 type: "get",
                 async: false,
-                url: "http://seat.ujn.edu.cn/rest/v2/checkIn?token="+data[token],
+                url: "http://202.194.76.30/rest/v2/checkIn?token="+data[token],
                 dataType: "jsonp",
                 jsonp: "callback"
               });
+            }
+            if (data.length == 0) {
+                $("#mytext").text("不是签到时间或没有预约");
+            } else {
+                var the_link = $('<br/><a href="'+message+'">点击这里查看是否成功</a>');
+                $("#mytext").text("_(┐「ε:)_");
+                $("#mytext").append(the_link);
             }
           }
         });
@@ -26,6 +44,16 @@
   </script>
 </head>
 <body>
-  <div id="myDiv"><h3>等一会</h3></div>
+  <div class="container-fluid bg-1 text-center" style="background-color: #2C3E50;">
+    <h3>=￣ω￣=</h3>
+    <h3>8点前 12点前 16点前 签到</h3>
+    <br>
+    <img class="img-circle" src="img/girl.jpg" alt="Photo" height="200px">
+    <br>
+    <h3 id="mytext">签到ing...</h3>
+  </div>
+  <footer class="container-fluid bg-4 text-center">
+    <p>Page Writed by Zephyr</p>
+  </footer>
 </body>
 </html>
