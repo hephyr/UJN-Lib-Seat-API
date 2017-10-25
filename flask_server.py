@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import time
 import json
+import codecs
 from functools import wraps
 
 from flask import Flask, request, current_app, jsonify
@@ -26,18 +27,18 @@ def jsonp(func):
 
 
 def getUsername():
-    with open('using.json', 'r') as f:
+    with codecs.open('using.json', 'r', 'utf-8') as f:
         using_list = json.load(f)
     hour = int(time.strftime("%H"))
     date = time.strftime("%Y-%-m-%-d")
-    return [i['username'] for i in using_list if i['date'] == date and (int(i['begin'][:2]) == hour or int(i['begin'][:2]) == hour+1)]
+    return [{'username': i['username'], 'password': i['password']} for i in using_list if i['date'] == date and (int(i['begin'][:2]) == hour or int(i['begin'][:2]) == hour+1)]
 
 
 def getToken():
     users = getUsername()
     tokens = []
     for user in users:
-        p = ujnlib(user)
+        p = ujnlib(user['username'], user['password'])
         tokens.append(p.token)
     return tokens
 
