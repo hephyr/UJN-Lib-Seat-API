@@ -103,3 +103,8 @@ class ujnlib(UJNLibApi):
         res = info.data.reservations
         reserve = [i for i in res if i.stat == 'CHECK_IN' or i.stat == 'RESERVE']
         return True if reserve else False
+
+    def getUsingReservations(self):
+        info = self.getHistory()
+        res = info.data.reservations
+        return [i for i in res if i.stat == 'CHECK_IN' or i.stat == 'RESERVE']

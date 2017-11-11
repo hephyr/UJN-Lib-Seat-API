@@ -7,7 +7,7 @@ from functools import wraps
 
 from flask import Flask, request, current_app, jsonify
 
-from ujnlib import *
+from __init__ import *
 app = Flask(__name__)
 
 

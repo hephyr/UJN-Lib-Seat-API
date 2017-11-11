@@ -4,7 +4,7 @@ import json
 import codecs
 import random
 
-from ujnlib import *
+from __init__ import *
 
 
 def randomLogin():
@@ -23,8 +23,8 @@ def randomLogin():
             pass
 
 
-def getSeatList():
-    with open('seat.json', 'r') as f:
+def json_file(filename='seat.json'):
+    with open(filename, 'r') as f:
         seats_json = json.load(f)
     return seats_json
 
@@ -46,14 +46,14 @@ def cleanUsing():
     final_users = []
     for user in using_list:
         p = ujnlib(user['username'], user['password'])
-        if p.isInUse():
+        if user['id'] in [i['id'] for i in p.getUsingReservations()]:
             final_users.append(user)
     with codecs.open('using.json', 'w', 'utf-8') as f:
         json.dump(final_users, f, ensure_ascii=False, indent=4)
 
 
 def reserve(t, date):
-    seats = getSeatList()
+    seats = json_file()
     for seat in seats:
         p = randomLogin()
         if date != 1:
@@ -63,8 +63,26 @@ def reserve(t, date):
             writeToUsing(p)
 
 
-if __name__ == '__main__':
-    times = [(10, 12), (12, 16), (16, 20)]
+def long_reserve(t, date):
+    seats = json_file('new_seat.json')
+    for seat in seats:
+        if seat.get('username'):
+            p = ujnlib(seat['username'], seat['password'])
+        else:
+            p = randomLogin()
+        if date != 1:
+            p.setDate('2')
+        option = p.book(t[0], t[1], seat['room_id'], seat['seat_num'])
+        if option:
+            writeToUsing(p)
+
+
+def res_main():
+    times = [(8, 12), (12, 16), (16, 20)]
     for t in times:
         reserve(t, 2)
+    long_reserve((8, 22), 2)
     cleanUsing()
+
+if __name__ == '__main__':
+    res_main()
