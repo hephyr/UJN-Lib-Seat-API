@@ -76,7 +76,7 @@ def reres():
     end = 1
     for seat in seats:
         for ti in seat['times']:
-            if h_now in range(int(ti['begin'], ti['end'])):
+            if h_now in range(int(ti['begin']), int(ti['end'])):
                 if ti.get('username'):
                     try:
                         p = ujnlib(ti['username'], ti['password'])
