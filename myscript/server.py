@@ -5,6 +5,7 @@ import json
 import codecs
 from functools import wraps
 
+from reserve_seat import *
 from flask import Flask, request, current_app, jsonify
 
 from __init__ import *
@@ -70,6 +71,10 @@ def look():
         using_list = json.load(f)
     return jsonify(using_list)
 
+@app.route('/reres')
+def rrres():
+    a = reres()
+    return "<h1>"+str(a)+"</h1>"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

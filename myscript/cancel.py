@@ -18,6 +18,18 @@ def main():
         cancel(p, user['id'])
     cleanUsing()
 
+    with open('seat.json', 'r') as f:
+        seats = json.load(f)
+    for seat in seats:
+        for ti in seat['times']:
+            if ti.get('username'):
+                try:
+                    p = ujnlib(ti['username'], ti['password'])
+                    use = p.getUsingReservations()
+                    for i in use:
+                        p.cancelRes(i['id'])
+                except:
+                    pass
 
 if __name__ == '__main__':
     main()

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import json
+import time
 import codecs
 import random
 
@@ -69,6 +70,25 @@ def reserve(date):
             if option:
                 writeToUsing(p)
 
+def reres():
+    seats = json_file()
+    h_now = int(time.strftime("%H"))
+    end = 1
+    for seat in seats:
+        for ti in seat['times']:
+            if h_now in range(int(ti['begin'], ti['end'])):
+                if ti.get('username'):
+                    try:
+                        p = ujnlib(ti['username'], ti['password'])
+                    except:
+                        p = randomLogin()
+                else:
+                    p = randomLogin()
+                option = p.book(h_now+1, ti['end'], seat['room_id'], seat['seat_num'])
+                end = ti['end']
+                if option:
+                    writeToUsing(p)
+    return (h_now, end)
 
 
 def res_main():
