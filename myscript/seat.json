@@ -1,0 +1,47 @@
+[
+    {
+        "note": "Mine",
+        "room_id": "19",
+        "seat_num": "316",
+        "times": [
+            {
+                "begin": "8", "end": "12",
+                "username": "",
+                "password": ""
+            },
+            {
+                "begin": "12", "end": "16",
+                "username": "",
+                "password": ""
+            },
+            {
+                "begin": "16", "end": "20",
+                "username": "",
+                "password": ""
+            }
+        ]
+    },
+    {
+        "note": "Mine",
+        "room_id": "19",
+        "seat_num": "304",
+        "times": [
+            {
+                "begin": "8", "end": "12",
+                "username": "",
+                "password": ""
+            },
+            {
+                "begin": "12", "end": "16",
+                "username": "",
+                "password": ""
+            },
+            {
+                "begin": "16", "end": "20",
+                "username": "",
+                "password": ""
+            }
+        ]
+    }
+]
+

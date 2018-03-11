@@ -108,3 +108,9 @@ class ujnlib(UJNLibApi):
         info = self.getHistory()
         res = info.data.reservations
         return [i for i in res if i.stat == 'CHECK_IN' or i.stat == 'RESERVE']
+
+    def setDateToday(self):
+        self.setDate('1')
+
+    def setDateTomorrow(self):
+        self.setDate('2')
