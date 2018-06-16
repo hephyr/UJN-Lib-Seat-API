@@ -5,6 +5,10 @@ import json
 import urlparse
 import requests
 
+# remove InsecureRequestWarning
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 class JsonDict(dict):
     """general json object that allows attributes to be bound to and also behaves like a dict"""
