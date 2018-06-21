@@ -4,10 +4,8 @@
 import json
 import urlparse
 import requests
+from libapi.login_exception import LoginException
 
-# remove InsecureRequestWarning
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class JsonDict(dict):
@@ -53,8 +51,7 @@ class UJNLibApi(object):
         self.token = self.getToken()
         self.dates = self.getDatetime()
         self.date = self.dates[0]
-        if self.token is False:
-            return False
+
 
     def parse_json(self, json_str):
         """parse str into JsonDict"""
@@ -85,7 +82,7 @@ class UJNLibApi(object):
         if page_json['status'] == 'success':
             return page_json['data']['token']
         else:
-            raise TypeError('Wrong account or password')
+            raise LoginException(self.ac, self.pw, page_json['message'])
 
     def checkToken(self):
         # 检测token是否过期
