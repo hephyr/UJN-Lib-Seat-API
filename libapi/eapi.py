@@ -1,17 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
-import sys
 
-import urllib3
 from api import *
-
-reload(sys)
-sys.setdefaultencoding('utf-8')
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-urllib3.disable_warnings()
 
 
 class ujnlib(UJNLibApi):
