@@ -3,7 +3,7 @@
 
 import logging
 import sys
-
+import urllib3
 from api import *
 
 reload(sys)

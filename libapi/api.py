@@ -4,7 +4,6 @@
 import json
 import urlparse
 import requests
-import urllib3
 
 from libapi.login_exception import LoginException
 
