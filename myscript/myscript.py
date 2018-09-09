@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import datetime
 import json
 import logging
 import time
@@ -15,32 +16,64 @@ def json_file(filename='seat.json'):
     return seats_json
 
 
-def reserve_one(date, seat, ti):
+def login_one(date, ti, seat):
     try:
         p = ujnlib(ti['username'], ti['password'])
         if date != 1:
             p.setDateTomorrow()
-        option = p.book(ti['begin'], ti['end'], seat['room_id'], seat['seat_num'])
-    except LoginException as e:
-        logging.error(e.err)
+        return p, (seat['room_id'], seat['seat_num']), (ti['begin'], ti['end'])
+
+    except LoginException as exception:
+        logging.error(exception.err)
+        return None
+
+
+def reserve_one(p, seat, ti):
+    p.book(ti[0], ti[1], seat[0], seat[1])
 
 
 def reserve_all(date):
     print "Starting at:", time.ctime()
-    threads = []
+    logging.info("开始")
 
-    seats = json_file()
-    for seat in seats:
-        for ti in seat['times']:
-            t = threading.Thread(target=reserve_one, args=(date, seat, ti))
-            threads.append(t)
-    n_threads = range(len(threads))
+    # unit,seat,time的数目一一对应,三个list一样长
+    units = []
+    seats = []
+    times = []
 
+    # 解析文件
+    lists = json_file()
+
+    # 登录
+    for per in lists:
+        for ti in per['times']:
+            unit, seat, ti = login_one(date, ti, per)
+            if unit is not None:
+                units.append(unit)
+                seats.append(seat)
+                times.append(ti)
+
+    logging.info("等待到达指定时间...")
+    str_target = str(datetime.datetime.now().date()) + " 14:55:00"
+    struct_time_target = time.strptime(str_target, "%Y-%m-%d %H:%M:%S")
+    stamp_target = time.mktime(struct_time_target)
+    stamp_now = time.time()
+    stamp_interval = stamp_target - stamp_now
+    if stamp_interval > 0:
+        time.sleep(stamp_interval)
+
+    # 多线程预约
+    reserve_threads = []
+    for i in range(len(units)):
+        t = threading.Thread(target=reserve_one, args=(units[i], seats[i], times[i]))
+        reserve_threads.append(t)
+    n_threads = range(len(reserve_threads))
     for i in n_threads:
-        threads[i].start()
+        reserve_threads[i].start()
     for i in n_threads:
-        threads[i].join()
+        reserve_threads[i].join()
 
+    logging.info("结束")
     print "All DONE at:", time.ctime()
 
 
