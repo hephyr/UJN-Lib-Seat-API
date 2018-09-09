@@ -7,8 +7,8 @@ import urllib3
 from api import *
 
 reload(sys)
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 sys.setdefaultencoding('utf-8')
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
