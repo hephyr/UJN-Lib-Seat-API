@@ -3,8 +3,6 @@
 import json
 import logging
 import time
-import codecs
-import random
 import threading
 
 from __init__ import *
@@ -28,7 +26,7 @@ def reserve_one(date, seat, ti):
 
 
 def reserve_all(date):
-    print "starting at:", time.ctime()
+    print "Starting at:", time.ctime()
     threads = []
 
     seats = json_file()
@@ -43,7 +41,7 @@ def reserve_all(date):
     for i in n_threads:
         threads[i].join()
 
-    print "all DONE at:", time.ctime()
+    print "All DONE at:", time.ctime()
 
 
 def check_in():
@@ -59,10 +57,10 @@ def check_in():
 
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'c':
-        check_in()
-    elif sys.argv[1] == 'r':
-        reserve_all(2)
-    else:
+    try:
+        if sys.argv[1] == 'c':
+            check_in()
+        elif sys.argv[1] == 'r':
+            reserve_all(2)
+    except IndexError as e:
         print("参数c:签到\n参数r:预约")
-    pass

@@ -4,8 +4,9 @@
 import json
 import urlparse
 import requests
-from libapi.login_exception import LoginException
+import urllib3
 
+from libapi.login_exception import LoginException
 
 
 class JsonDict(dict):
@@ -51,7 +52,6 @@ class UJNLibApi(object):
         self.token = self.getToken()
         self.dates = self.getDatetime()
         self.date = self.dates[0]
-
 
     def parse_json(self, json_str):
         """parse str into JsonDict"""
