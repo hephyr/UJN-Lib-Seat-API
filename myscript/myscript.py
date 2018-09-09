@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import Queue
 import datetime
 import json
 import logging
@@ -9,6 +10,8 @@ import threading
 from __init__ import *
 from libapi.login_exception import LoginException
 
+units = Queue.Queue()
+
 
 def json_file(filename='seat.json'):
     with open(filename, 'r') as f:
@@ -16,45 +19,37 @@ def json_file(filename='seat.json'):
     return seats_json
 
 
-def login_one(date, ti, seat):
+def login_one(is_tomorrow, ti, seat):
     try:
         p = ujnlib(ti['username'], ti['password'])
-        if date != 1:
+        if is_tomorrow != 1:
             p.setDateTomorrow()
-        return p, (seat['room_id'], seat['seat_num']), (ti['begin'], ti['end'])
-
+        units.put((p, (seat['room_id'], seat['seat_num']), (ti['begin'], ti['end'])))
     except LoginException as exception:
         logging.error(exception.err)
-        return None
 
 
 def reserve_one(p, seat, ti):
     p.book(ti[0], ti[1], seat[0], seat[1])
 
 
-def reserve_all(date):
-    print "Starting at:", time.ctime()
-    logging.info("开始")
-
-    # unit,seat,time的数目一一对应,三个list一样长
-    units = []
-    seats = []
-    times = []
-
-    # 解析文件
-    lists = json_file()
-
-    # 登录
+# 多线程登录
+def login_all(is_tomorrow, lists):
+    threads_login = []
     for per in lists:
         for ti in per['times']:
-            unit, seat, ti = login_one(date, ti, per)
-            if unit is not None:
-                units.append(unit)
-                seats.append(seat)
-                times.append(ti)
+            t = threading.Thread(target=login_one, args=(is_tomorrow, ti, per))
+            threads_login.append(t)
+    n_threads = range(len(threads_login))
+    for i in n_threads:
+        threads_login[i].start()
+    for i in n_threads:
+        threads_login[i].join()
 
+
+def wait_to(target_time):
     logging.info("等待到达指定时间...")
-    str_target = str(datetime.datetime.now().date()) + " 14:55:00"
+    str_target = str(datetime.datetime.now().date()) + " " + target_time
     struct_time_target = time.strptime(str_target, "%Y-%m-%d %H:%M:%S")
     stamp_target = time.mktime(struct_time_target)
     stamp_now = time.time()
@@ -62,16 +57,36 @@ def reserve_all(date):
     if stamp_interval > 0:
         time.sleep(stamp_interval)
 
+
+def reserve_all(is_tomorrow):
+    print "Starting at:", time.ctime()
+    logging.info("开始")
+
+    # obj,seat,time的数目一一对应,三个list一样长
+    objs, seats, times = [], [], []
+
+    lists = json_file()
+    login_all(is_tomorrow, lists)
+
+    # 将登录所得结果集分开
+    while not units.empty():
+        unit = units.get()
+        objs.append(unit[0])
+        seats.append(unit[1])
+        times.append(unit[2])
+
+    wait_to("05:00:00")
+
     # 多线程预约
-    reserve_threads = []
-    for i in range(len(units)):
-        t = threading.Thread(target=reserve_one, args=(units[i], seats[i], times[i]))
-        reserve_threads.append(t)
-    n_threads = range(len(reserve_threads))
+    threads_reserve = []
+    for i in range(len(objs)):
+        t = threading.Thread(target=reserve_one, args=(objs[i], seats[i], times[i]))
+        threads_reserve.append(t)
+    n_threads = range(len(threads_reserve))
     for i in n_threads:
-        reserve_threads[i].start()
+        threads_reserve[i].start()
     for i in n_threads:
-        reserve_threads[i].join()
+        threads_reserve[i].join()
 
     logging.info("结束")
     print "All DONE at:", time.ctime()
