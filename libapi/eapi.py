@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import json
-import random
-import requests
+import logging
+import sys
 
+import urllib3
 from api import *
+
+reload(sys)
+sys.setdefaultencoding('utf-8')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+urllib3.disable_warnings()
 
 
 class ujnlib(UJNLibApi):
@@ -28,8 +34,8 @@ class ujnlib(UJNLibApi):
         building_list = []
         for value in info.data:
             building_list.append(
-                            (str(value.roomId),
-                             str(value.floor) + u'楼' + value.room))
+                (str(value.roomId),
+                 str(value.floor) + u'楼' + value.room))
         return building_list
 
     def getSeatTime(self, seat_id):
@@ -71,15 +77,17 @@ class ujnlib(UJNLibApi):
         # 预约座位
         info = self.freeBook(start_time, end_time, seat_id)
         if info.status == 'fail':
+            logger.error('%s: %s' % (self.ac, info.message))
             return False
         else:
+            logger.info('%s%s' % (self.ac, '预约成功'))
             return True
 
     def book(self, start_time, end_time, room_id, seat_num):
         # 预约座位
+        logger.info('%s%s %s-%s' % (self.ac, ': 开始预约', start_time, end_time))
         seat_id = self.getSeatId(room_id, seat_num)
         return self.free(start_time, end_time, seat_id)
-
 
     def getSeatId(self, room_id, seat_num):
         # 获取座位id
