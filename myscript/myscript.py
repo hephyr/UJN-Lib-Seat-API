@@ -59,9 +59,7 @@ def wait_to(target_time):
 
 
 def reserve_all(is_tomorrow):
-    print "Starting at:", time.ctime()
-    logging.info("开始")
-
+    logging.info("开始运行")
     # obj,seat,time的数目一一对应,三个list一样长
     objs, seats, times = [], [], []
 
@@ -74,7 +72,6 @@ def reserve_all(is_tomorrow):
         objs.append(unit[0])
         seats.append(unit[1])
         times.append(unit[2])
-
     wait_to("05:00:00")
 
     # 多线程预约
@@ -89,7 +86,6 @@ def reserve_all(is_tomorrow):
         threads_reserve[i].join()
 
     logging.info("结束")
-    print "All DONE at:", time.ctime()
 
 
 def check_in():

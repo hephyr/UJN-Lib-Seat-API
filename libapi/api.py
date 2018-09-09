@@ -14,6 +14,7 @@ sys.setdefaultencoding('utf-8')
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.getLogger("requests").setLevel(logging.WARNING)
 logger = logging.getLogger()
 
 class JsonDict(dict):
