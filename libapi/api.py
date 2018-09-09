@@ -4,9 +4,17 @@
 import json
 import urlparse
 import requests
+import logging
+import sys
 from libapi.login_exception import LoginException
+import urllib3
 
+reload(sys)
+sys.setdefaultencoding('utf-8')
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger()
 
 class JsonDict(dict):
     """general json object that allows attributes to be bound to and also behaves like a dict"""
@@ -52,7 +60,6 @@ class UJNLibApi(object):
         self.dates = self.getDatetime()
         self.date = self.dates[0]
 
-
     def parse_json(self, json_str):
         """parse str into JsonDict"""
 
@@ -75,6 +82,7 @@ class UJNLibApi(object):
 
     def getToken(self):
         # 获取token
+        logger.info(self.ac + ": 登录")
         param = self.api['getToken'].format(self.ac, self.pw)
         url = urlparse.urljoin(self.base_url, param)
         r = self.requests_call('GET', url)
