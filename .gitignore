@@ -1,0 +1,6 @@
+*.pyc
+*.txt
+test.py
+*.json
+.vscode/
+*.html
