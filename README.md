@@ -1,10 +1,10 @@
 # 济南大学图书馆座位预约系统API
 _UJN Library Seat API for Python_
 
-## 🎉支持外网签到了🎉
-感谢 [Yunqiang Sun](https://github.com/yunqiang-sun)
+## 新版说明
+新版服务器后端采用 HMAC 进行 API 认证，本人能力有限无法进行破解。目前采用复用 HMAC 的方式进行绕过（[参考 issue](https://github.com/iozephyr/UJN-Lib-Seat-API/issues/19#issuecomment-493819900)），建议使用本项目时替换源码 HTTP 请求中 HEADER 的 HMAC 内容。
 
-# 说明
+## 说明
 Python 版在 libapi 目录下
 
 支持 Python 2 3 蛋疼的编码问题建议 Python 3

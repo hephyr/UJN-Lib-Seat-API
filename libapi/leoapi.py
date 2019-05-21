@@ -54,7 +54,10 @@ class leoapi(object):
             "token": self.token,
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36",
             'Accept-Encoding': 'gzip',
-            'X-Forwarded-For': '10.167.159.118'
+            # 'X-Forwarded-For': '10.167.159.118',
+            "x-hmac-request-key": "5595a06337d40bc11737f3af0968306c3832dbe1468d6b15a939ed972e8454e4",
+            "x-request-date": "1557277909949",
+            "x-request-id": "41e546d0-5970-11e9-f12c-530cc697b6f6"
         }
         return self.requests_call(method, url, headers=headers, data=data, params=params)
 
@@ -67,7 +70,7 @@ class leoapi(object):
 
     def getToken(self):
         # 获取token
-        r = self.requests_call("GET", self.api['token'].format(username=self.ac, password=self.pw))
+        r = self.requests("GET", self.api['token'].format(username=self.ac, password=self.pw))
         return parse_json(r.text)
 
     def reservations(self):
