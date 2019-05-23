@@ -54,7 +54,7 @@ class leoapi(object):
             "token": self.token,
             "user-agent": "Dart/2.1 (dart:io)",
             'Accept-Encoding': 'gzip',
-            # 'X-Forwarded-For': '10.167.159.118',
+            'X-Forwarded-For': '10.167.159.118',
         }
         if (method == 'GET'):
             headers.update({

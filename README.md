@@ -2,7 +2,9 @@
 _UJN Library Seat API for Python_
 
 ## 新版说明
-新版服务器后端采用 HMAC 进行 API 认证，本人能力有限无法进行破解。目前采用复用 HMAC 的方式进行绕过（[参考 issue](https://github.com/iozephyr/UJN-Lib-Seat-API/issues/19#issuecomment-493819900)），建议使用本项目时替换源码 HTTP Header 的 HMAC 内容。另外，后端不再使用 `X-Forwarded-For` 作为签到判断方式，所以外网签到失效。
+新版服务器后端采用 HMAC 进行 API 认证，本人能力有限无法进行破解。目前采用复用 HMAC 的方式进行绕过（[参考 issue](https://github.com/iozephyr/UJN-Lib-Seat-API/issues/19#issuecomment-493819900)），建议使用本项目时替换源码 HTTP Header 的 HMAC 内容。
+
+签到功能仍然可以使用。
 
 ## 说明
 Python 版在 libapi 目录下
