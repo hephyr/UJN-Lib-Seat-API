@@ -51,7 +51,7 @@ class leoapi(object):
         headers = {
             'Host': 'seat.ujn.edu.cn:8443',
             "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-            # "token": self.token,
+            "token": self.token,
             "user-agent": "Dart/2.1 (dart:io)",
             'Accept-Encoding': 'gzip',
             # 'X-Forwarded-For': '10.167.159.118',
