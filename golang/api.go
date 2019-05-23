@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	simplejson "github.com/bitly/go-simplejson"
 )
 
 type User struct {
@@ -33,6 +35,15 @@ func request_call(client *http.Client, method string, request_url string, data u
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Content-Type", "charset=UTF-8")
 	req.Header.Add("X-Forwarded-For", "10.167.159.118")
+	if method == "GET" {
+		req.Header.Set("x-hmac-request-key", "5595a06337d40bc11737f3af0968306c3832dbe1468d6b15a939ed972e8454e4")
+		req.Header.Set("x-request-date", "1557277909949")
+		req.Header.Set("x-request-id", "41e546d0-5970-11e9-f12c-530cc697b6f6")
+	} else if method == "POST" {
+		req.Header.Set("x-hmac-request-key", "d7f8b03ef231f933fcdd1a3489c18cfc8825f9cb348c86794b5ad6b0666ff6ae")
+		req.Header.Set("x-request-date", "1557277799318")
+		req.Header.Set("x-request-id", "fff45360-5970-11e9-b737-e9f8c774e030")
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
