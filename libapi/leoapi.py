@@ -51,14 +51,24 @@ class leoapi(object):
         headers = {
             'Host': 'seat.ujn.edu.cn:8443',
             "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-            "token": self.token,
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36",
+            # "token": self.token,
+            "user-agent": "Dart/2.1 (dart:io)",
             'Accept-Encoding': 'gzip',
             # 'X-Forwarded-For': '10.167.159.118',
-            "x-hmac-request-key": "5595a06337d40bc11737f3af0968306c3832dbe1468d6b15a939ed972e8454e4",
-            "x-request-date": "1557277909949",
-            "x-request-id": "41e546d0-5970-11e9-f12c-530cc697b6f6"
         }
+        if (method == 'GET'):
+            headers.update({
+                "x-hmac-request-key": "5595a06337d40bc11737f3af0968306c3832dbe1468d6b15a939ed972e8454e4",
+                "x-request-date": "1557277909949",
+                "x-request-id": "41e546d0-5970-11e9-f12c-530cc697b6f6"
+            })
+        elif (method == 'POST'):
+            headers.update({
+                "x-hmac-request-key": "d7f8b03ef231f933fcdd1a3489c18cfc8825f9cb348c86794b5ad6b0666ff6ae",
+                "x-request-date": "1557277799318",
+                "x-request-id": "fff45360-5970-11e9-b737-e9f8c774e030"
+            })
+        
         return self.requests_call(method, url, headers=headers, data=data, params=params)
 
     def login(self):
@@ -113,6 +123,7 @@ class leoapi(object):
             start = float(start_time) * 60
             end = float(end_time) * 60
         post_data = {
+            'token': self.token,
             'startTime': str(int(start)),
             'endTime': str(int(end)),
             'seat': seat_id,
